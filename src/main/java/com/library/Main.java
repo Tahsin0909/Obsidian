@@ -1,10 +1,12 @@
-package main.java.com.library;
+package com.library;
 
-import javax.swing.JOptionPane;
+import com.library.ui.LoginFrame;
 
+import javax.swing.*;
+
+/** Application entry point. */
 public class Main {
-
     public static void main(String[] args) {
-        JOptionPane.showMessageDialog(null, "Library Management System");
+        SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
     }
 }
