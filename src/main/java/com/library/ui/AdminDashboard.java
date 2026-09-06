@@ -14,7 +14,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
-import java.util.List;
 
 /**
  * Modern Administrator Dashboard for the Library Management System.
@@ -92,8 +91,7 @@ public class AdminDashboard extends JFrame {
         userBadge.setBackground(Color.WHITE);
         userBadge.setBorder(new CompoundBorder(
                 new LineBorder(UITheme.BORDER, 1, true),
-                new EmptyBorder(2, 10, 2, 10)
-        ));
+                new EmptyBorder(2, 10, 2, 10)));
 
         JLabel userIcon = new JLabel("👤");
         JLabel userName = new JLabel(admin.getFullName() + " (" + admin.getEmail() + ")");
@@ -187,7 +185,7 @@ public class AdminDashboard extends JFrame {
         filterRow.add(searchField, BorderLayout.CENTER);
 
         // Table
-        String[] cols = {"ID", "ISBN", "Title", "Author", "Category", "Publisher", "Year", "Total Qty", "Available"};
+        String[] cols = { "ID", "ISBN", "Title", "Author", "Category", "Publisher", "Year", "Total Qty", "Available" };
         booksTableModel = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -207,9 +205,17 @@ public class AdminDashboard extends JFrame {
         table.setRowSorter(sorter);
 
         searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { filter(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { filter(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { filter(); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
+
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
+
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
 
             private void filter() {
                 String text = searchField.getText().trim();
@@ -234,7 +240,7 @@ public class AdminDashboard extends JFrame {
     private void refreshBooksTable() {
         booksTableModel.setRowCount(0);
         for (Book b : store.books()) {
-            booksTableModel.addRow(new Object[]{
+            booksTableModel.addRow(new Object[] {
                     b.getBookId(),
                     b.getIsbn(),
                     b.getTitle(),
@@ -253,7 +259,7 @@ public class AdminDashboard extends JFrame {
         panel.setBackground(Color.WHITE);
         panel.setBorder(new EmptyBorder(16, 16, 16, 16));
 
-        String[] cols = {"Member ID", "Full Name", "Email / Username", "Phone", "Address", "Join Date", "Status"};
+        String[] cols = { "Member ID", "Full Name", "Email / Username", "Phone", "Address", "Join Date", "Status" };
         membersTableModel = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -262,7 +268,7 @@ public class AdminDashboard extends JFrame {
         };
 
         for (Member m : store.members()) {
-            membersTableModel.addRow(new Object[]{
+            membersTableModel.addRow(new Object[] {
                     m.getMemberId(),
                     m.getName(),
                     m.getUsername(),
@@ -293,7 +299,7 @@ public class AdminDashboard extends JFrame {
         panel.setBackground(Color.WHITE);
         panel.setBorder(new EmptyBorder(16, 16, 16, 16));
 
-        String[] cols = {"Borrow ID", "Member Name", "Book Title", "Borrow Date", "Due Date", "Status"};
+        String[] cols = { "Borrow ID", "Member Name", "Book Title", "Borrow Date", "Due Date", "Status" };
         borrowingsTableModel = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -308,7 +314,7 @@ public class AdminDashboard extends JFrame {
             Book book = store.findBookById(b.getBookId());
             String bookTitle = book != null ? book.getTitle() : "Book #" + b.getBookId();
 
-            borrowingsTableModel.addRow(new Object[]{
+            borrowingsTableModel.addRow(new Object[] {
                     b.getBorrowingId(),
                     memberName,
                     bookTitle,
@@ -349,8 +355,7 @@ public class AdminDashboard extends JFrame {
                 "Are you sure you want to log out?",
                 "Confirm Logout",
                 JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE
-        );
+                JOptionPane.QUESTION_MESSAGE);
         if (choice == JOptionPane.YES_OPTION) {
             dispose();
             SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
