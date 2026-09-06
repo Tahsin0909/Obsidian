@@ -1,12 +1,36 @@
 package com.library.ui;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import javax.swing.*;
-import java.awt.*;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+
+import com.library.model.Admin;
+import com.library.model.Member;
+import com.library.model.User;
+import com.library.services.AuthService;
 
 public class LoginFrame extends JFrame {
 
+        private final AuthService authService = new AuthService();
         private JTextField emailField;
         private JPasswordField passwordField;
         private JLabel statusLabel;
@@ -97,6 +121,7 @@ public class LoginFrame extends JFrame {
 
                 emailField.setAlignmentX(
                                 Component.CENTER_ALIGNMENT);
+                emailField.addActionListener(e -> onLogin());
 
                 // ==================== PASSWORD ====================
 
@@ -119,19 +144,20 @@ public class LoginFrame extends JFrame {
 
                 passwordField.setAlignmentX(
                                 Component.CENTER_ALIGNMENT);
+                passwordField.addActionListener(e -> onLogin());
 
                 // ==================== LOGIN BUTTON ====================
 
                 JButton loginButton = UITheme.primaryButton("Login");
-                loginButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+                loginButton.setAlignmentX(
+                                Component.CENTER_ALIGNMENT);
 
                 loginButton.setMaximumSize(
                                 new Dimension(
                                                 Integer.MAX_VALUE,
                                                 35));
-
-                loginButton.setAlignmentX(
-                                Component.CENTER_ALIGNMENT);
+                loginButton.addActionListener(e -> onLogin());
 
                 // ==================== STATUS ====================
 
@@ -139,12 +165,21 @@ public class LoginFrame extends JFrame {
 
                 statusLabel.setAlignmentX(
                                 Component.CENTER_ALIGNMENT);
+                statusLabel.setForeground(UITheme.DANGER);
 
-                // ==================== LOGIN ACTION ====================
+                // ==================== Hint ====================
 
-                loginButton.addActionListener(
-                                e -> login());
-
+                JLabel hint = new JLabel("<html><i>Demo logins (all passwords: 123456):<br>"
+                                + "Admin &nbsp;&nbsp;admin@mail.com<br>"
+                                + "Member  member@mail.com</i></html>");
+                hint.setFont(UITheme.FONT_SMALL);
+                hint.setForeground(UITheme.TEXT_MUTED);
+                hint.setAlignmentX(Component.CENTER_ALIGNMENT);
+                hint.setHorizontalAlignment(SwingConstants.LEFT);
+                hint.setMaximumSize(
+                                new Dimension(
+                                                Integer.MAX_VALUE,
+                                                hint.getPreferredSize().height));
                 // ==================== ADD COMPONENTS ====================
 
                 loginPanel.add(title);
@@ -183,6 +218,9 @@ public class LoginFrame extends JFrame {
                                 Box.createVerticalStrut(15));
 
                 loginPanel.add(statusLabel);
+                loginPanel.add(
+                                Box.createVerticalStrut(15));
+                loginPanel.add(hint);
 
                 // ==================== ADD PANELS ====================
 
@@ -194,26 +232,32 @@ public class LoginFrame extends JFrame {
 
         // ==================== LOGIN METHOD ====================
 
-        private void login() {
-
-                String email = emailField.getText();
-
-                String password = new String(
-                                passwordField.getPassword());
+        private void onLogin() {
+                String email = emailField.getText().trim();
+                String password = new String(passwordField.getPassword());
 
                 if (email.isEmpty() || password.isEmpty()) {
-
-                        statusLabel.setText(
-                                        "Please enter email and password.");
-
+                        statusLabel.setForeground(UITheme.DANGER);
+                        statusLabel.setText("Please enter both email and password.");
                         return;
                 }
 
-                statusLabel.setText(
-                                "Login successful!");
-        }
+                User user = authService.login(email, password);
+                if (user == null) {
+                        statusLabel.setForeground(UITheme.DANGER);
+                        statusLabel.setText("Invalid email or password.");
+                        return;
+                }
 
-        // ==================== MAIN METHOD ====================
+                // Authentication succeeded - Redirect based on Polymorphic User Role
+                dispose();
+
+                if (user instanceof Admin) {
+                        new AdminDashboard((Admin) user).setVisible(true);
+                } else if (user instanceof Member) {
+                        new MemberDashboard((Member) user).setVisible(true);
+                }
+        }
 
         public static void main(String[] args) {
 
