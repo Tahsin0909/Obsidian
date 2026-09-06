@@ -122,7 +122,8 @@ public class LoginFrame extends JFrame {
 
                 // ==================== LOGIN BUTTON ====================
 
-                JButton loginButton = new JButton("Login");
+                JButton loginButton = UITheme.primaryButton("Login");
+                loginButton.setAlignmentX(Component.LEFT_ALIGNMENT);
 
                 loginButton.setMaximumSize(
                                 new Dimension(
