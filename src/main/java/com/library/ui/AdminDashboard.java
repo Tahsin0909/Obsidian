@@ -3,6 +3,7 @@ package com.library.ui;
 import com.library.model.Admin;
 import com.library.model.Book;
 import com.library.model.Borrowing;
+import com.library.model.Category;
 import com.library.model.Member;
 import com.library.store.DataStore;
 
@@ -14,6 +15,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.time.LocalDate;
 
 /**
  * Modern Administrator Dashboard for the Library Management System.
@@ -28,6 +30,7 @@ public class AdminDashboard extends JFrame {
     private DefaultTableModel booksTableModel;
     private DefaultTableModel membersTableModel;
     private DefaultTableModel borrowingsTableModel;
+    private JLabel totalBooksValueLabel;
 
     public AdminDashboard(Admin admin) {
         this.admin = admin;
@@ -120,15 +123,15 @@ public class AdminDashboard extends JFrame {
         int activeBorrowings = store.borrowings().size();
         int totalCategories = store.categories().size();
 
-        kpiPanel.add(createKpiCard("Total Books", String.valueOf(totalBooks), "📚", UITheme.PRIMARY));
-        kpiPanel.add(createKpiCard("Registered Members", String.valueOf(totalMembers), "👥", UITheme.ACCENT));
-        kpiPanel.add(createKpiCard("Active Borrowings", String.valueOf(activeBorrowings), "📖", UITheme.WARNING));
-        kpiPanel.add(createKpiCard("Categories", String.valueOf(totalCategories), "🏷️", UITheme.PRIMARY_LIGHT));
+        kpiPanel.add(createKpiCard("Total Books", String.valueOf(totalBooks), "📚", UITheme.PRIMARY, true));
+        kpiPanel.add(createKpiCard("Registered Members", String.valueOf(totalMembers), "👥", UITheme.ACCENT, false));
+        kpiPanel.add(createKpiCard("Active Borrowings", String.valueOf(activeBorrowings), "📖", UITheme.WARNING, false));
+        kpiPanel.add(createKpiCard("Categories", String.valueOf(totalCategories), "🏷️", UITheme.PRIMARY_LIGHT, false));
 
         return kpiPanel;
     }
 
-    private JPanel createKpiCard(String label, String value, String icon, Color accentColor) {
+    private JPanel createKpiCard(String label, String value, String icon, Color accentColor, boolean isTotalBooks) {
         JPanel card = UITheme.card();
         card.setLayout(new BorderLayout());
 
@@ -148,6 +151,10 @@ public class AdminDashboard extends JFrame {
         JLabel valComp = new JLabel(value);
         valComp.setFont(new Font("Segoe UI", Font.BOLD, 26));
         valComp.setForeground(accentColor);
+
+        if (isTotalBooks) {
+            totalBooksValueLabel = valComp;
+        }
 
         card.add(topRow, BorderLayout.NORTH);
         card.add(valComp, BorderLayout.SOUTH);
@@ -172,17 +179,24 @@ public class AdminDashboard extends JFrame {
         panel.setBackground(Color.WHITE);
         panel.setBorder(new EmptyBorder(16, 16, 16, 16));
 
-        // Search Bar Top
-        JPanel filterRow = new JPanel(new BorderLayout(8, 0));
+        // Search Bar & Action Top
+        JPanel filterRow = new JPanel(new BorderLayout(12, 0));
         filterRow.setOpaque(false);
 
+        JPanel searchBox = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        searchBox.setOpaque(false);
         JLabel searchLbl = new JLabel("Search Books:");
         searchLbl.setFont(UITheme.FONT_BODY_BOLD);
         JTextField searchField = new JTextField();
         searchField.setPreferredSize(new Dimension(280, 32));
+        searchBox.add(searchLbl);
+        searchBox.add(searchField);
 
-        filterRow.add(searchLbl, BorderLayout.WEST);
-        filterRow.add(searchField, BorderLayout.CENTER);
+        JButton addBookBtn = UITheme.primaryButton("+ Add Book");
+        addBookBtn.addActionListener(e -> showAddBookDialog());
+
+        filterRow.add(searchBox, BorderLayout.WEST);
+        filterRow.add(addBookBtn, BorderLayout.EAST);
 
         // Table
         String[] cols = { "ID", "ISBN", "Title", "Author", "Category", "Publisher", "Year", "Total Qty", "Available" };
@@ -228,6 +242,7 @@ public class AdminDashboard extends JFrame {
         });
 
         centerAlignColumns(table, 0, 1, 6, 7, 8);
+        setColumnWidths(table, 50, 115, 170, 130, 130, 110, 55, 75, 75);
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(new LineBorder(UITheme.BORDER));
@@ -286,6 +301,7 @@ public class AdminDashboard extends JFrame {
         UITheme.styleTableHeader(table.getTableHeader());
 
         centerAlignColumns(table, 0, 3, 5, 6);
+        setColumnWidths(table, 50, 140, 150, 110, 180, 95, 80);
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(new LineBorder(UITheme.BORDER));
@@ -331,6 +347,7 @@ public class AdminDashboard extends JFrame {
         UITheme.styleTableHeader(table.getTableHeader());
 
         centerAlignColumns(table, 0, 3, 4, 5);
+        setColumnWidths(table, 70, 140, 180, 95, 95, 85);
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(new LineBorder(UITheme.BORDER));
@@ -347,6 +364,144 @@ public class AdminDashboard extends JFrame {
                 table.getColumnModel().getColumn(idx).setCellRenderer(centerRenderer);
             }
         }
+    }
+
+    private void setColumnWidths(JTable table, int... widths) {
+        for (int i = 0; i < widths.length && i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
+        }
+    }
+
+    private void showAddBookDialog() {
+        JDialog dialog = new JDialog(this, "Add New Book", true);
+        dialog.setSize(480, 520);
+        dialog.setLocationRelativeTo(this);
+        dialog.setResizable(false);
+
+        JPanel root = new JPanel(new BorderLayout(0, 16));
+        root.setBackground(Color.WHITE);
+        root.setBorder(new EmptyBorder(20, 24, 20, 24));
+
+        // Header
+        JPanel headerPanel = new JPanel(new BorderLayout(0, 4));
+        headerPanel.setOpaque(false);
+        JLabel heading = new JLabel("Add Book to Catalog");
+        heading.setFont(UITheme.FONT_HEADING);
+        heading.setForeground(UITheme.TEXT_DARK);
+        JLabel sub = new JLabel("Enter book metadata and stock quantity");
+        sub.setFont(UITheme.FONT_SMALL);
+        sub.setForeground(UITheme.TEXT_MUTED);
+        headerPanel.add(heading, BorderLayout.NORTH);
+        headerPanel.add(sub, BorderLayout.SOUTH);
+
+        // Form
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setOpaque(false);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(6, 4, 6, 4);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        JTextField isbnField = new JTextField();
+        JTextField titleField = new JTextField();
+        JTextField authorField = new JTextField();
+
+        JComboBox<Category> categoryCombo = new JComboBox<>();
+        categoryCombo.setFont(UITheme.FONT_BODY);
+        for (Category cat : store.categories()) {
+            categoryCombo.addItem(cat);
+        }
+
+        JTextField publisherField = new JTextField();
+        JSpinner yearSpinner = new JSpinner(new SpinnerNumberModel(LocalDate.now().getYear(), 1800, 2100, 1));
+        yearSpinner.setEditor(new JSpinner.NumberEditor(yearSpinner, "#"));
+        JSpinner qtySpinner = new JSpinner(new SpinnerNumberModel(3, 1, 9999, 1));
+
+        addFormField(form, gbc, 0, "ISBN:", isbnField);
+        addFormField(form, gbc, 1, "Book Title:", titleField);
+        addFormField(form, gbc, 2, "Author:", authorField);
+        addFormField(form, gbc, 3, "Category:", categoryCombo);
+        addFormField(form, gbc, 4, "Publisher:", publisherField);
+        addFormField(form, gbc, 5, "Publication Year:", yearSpinner);
+        addFormField(form, gbc, 6, "Total Copies / Quantity:", qtySpinner);
+
+        // Buttons
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        btnPanel.setOpaque(false);
+
+        JButton cancelBtn = UITheme.secondaryButton("Cancel");
+        cancelBtn.addActionListener(e -> dialog.dispose());
+
+        JButton saveBtn = UITheme.primaryButton("Save Book");
+        saveBtn.addActionListener(e -> {
+            String isbn = isbnField.getText().trim();
+            String title = titleField.getText().trim();
+            String author = authorField.getText().trim();
+            String publisher = publisherField.getText().trim();
+            Category category = (Category) categoryCombo.getSelectedItem();
+            int year = (Integer) yearSpinner.getValue();
+            int qty = (Integer) qtySpinner.getValue();
+
+            if (isbn.isEmpty() || title.isEmpty() || author.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "Please fill in ISBN, Title, and Author.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (store.findBookByIsbn(isbn) != null) {
+                JOptionPane.showMessageDialog(dialog, "A book with ISBN \"" + isbn + "\" already exists!", "Duplicate Book", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            Book newBook = new Book(
+                    store.nextBookId(),
+                    isbn,
+                    title,
+                    author,
+                    category != null ? category.getCategoryId() : 1,
+                    category != null ? category.getCategoryName() : "General",
+                    publisher.isEmpty() ? "Independent" : publisher,
+                    year,
+                    qty,
+                    qty
+            );
+
+            store.addBook(newBook);
+            refreshBooksTable();
+            if (totalBooksValueLabel != null) {
+                totalBooksValueLabel.setText(String.valueOf(store.books().size()));
+            }
+
+            dialog.dispose();
+            JOptionPane.showMessageDialog(this, "Book \"" + newBook.getTitle() + "\" added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+        });
+
+        btnPanel.add(cancelBtn);
+        btnPanel.add(saveBtn);
+
+        root.add(headerPanel, BorderLayout.NORTH);
+        root.add(form, BorderLayout.CENTER);
+        root.add(btnPanel, BorderLayout.SOUTH);
+
+        dialog.setContentPane(root);
+        dialog.setVisible(true);
+    }
+
+    private void addFormField(JPanel panel, GridBagConstraints gbc, int row, String label, JComponent field) {
+        gbc.gridy = row;
+
+        gbc.gridx = 0;
+        gbc.weightx = 0.35;
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(UITheme.FONT_BODY_BOLD);
+        lbl.setForeground(UITheme.TEXT_DARK);
+        panel.add(lbl, gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 0.65;
+        field.setFont(UITheme.FONT_BODY);
+        if (field instanceof JTextField) {
+            ((JTextField) field).setPreferredSize(new Dimension(field.getPreferredSize().width, 30));
+        }
+        panel.add(field, gbc);
     }
 
     private void logout() {

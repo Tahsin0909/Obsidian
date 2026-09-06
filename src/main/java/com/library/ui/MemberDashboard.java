@@ -195,6 +195,7 @@ public class MemberDashboard extends JFrame {
         UITheme.styleTableHeader(table.getTableHeader());
 
         centerAlignColumns(table, 0, 3, 4, 5);
+        setColumnWidths(table, 70, 180, 140, 95, 120, 85);
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(new LineBorder(UITheme.BORDER));
@@ -298,6 +299,7 @@ public class MemberDashboard extends JFrame {
         });
 
         centerAlignColumns(table, 0, 5, 6);
+        setColumnWidths(table, 100, 200, 150, 100, 100, 50, 100);
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(new LineBorder(UITheme.BORDER));
@@ -319,32 +321,51 @@ public class MemberDashboard extends JFrame {
         gbc.insets = new Insets(8, 12, 8, 12);
         gbc.anchor = GridBagConstraints.WEST;
 
-        addProfileRow(card, gbc, 0, "Full Name:", member.getName());
-        addProfileRow(card, gbc, 1, "Email / Username:", member.getEmail());
-        addProfileRow(card, gbc, 2, "Phone Number:", member.getPhone());
-        addProfileRow(card, gbc, 3, "Residential Address:", member.getAddress());
-        addProfileRow(card, gbc, 4, "Member ID:", "#" + member.getMemberId());
-        addProfileRow(card, gbc, 5, "Membership Date:", member.getMembershipDate().toString());
-        addProfileRow(card, gbc, 6, "Account Status:", member.getStatus().name());
+        gbc.gridx = 0; gbc.gridy = 0;
+        JLabel header = new JLabel("Member Account Information");
+        header.setFont(UITheme.FONT_HEADING);
+        header.setForeground(UITheme.PRIMARY);
+        card.add(header, gbc);
+
+        gbc.gridy = 1;
+        card.add(new JSeparator(), gbc);
+
+        gbc.gridy = 2;
+        card.add(profileRow("Full Name:", member.getName()), gbc);
+
+        gbc.gridy = 3;
+        card.add(profileRow("Email / Username:", member.getEmail()), gbc);
+
+        gbc.gridy = 4;
+        card.add(profileRow("Phone:", member.getPhone()), gbc);
+
+        gbc.gridy = 5;
+        card.add(profileRow("Address:", member.getAddress()), gbc);
+
+        gbc.gridy = 6;
+        card.add(profileRow("Membership Date:", member.getMembershipDate() != null ? member.getMembershipDate().toString() : "-"), gbc);
+
+        gbc.gridy = 7;
+        card.add(profileRow("Account Status:", member.getStatus() != null ? member.getStatus().name() : "ACTIVE"), gbc);
 
         panel.add(card, BorderLayout.NORTH);
         return panel;
     }
 
-    private void addProfileRow(JPanel container, GridBagConstraints gbc, int row, String label, String value) {
-        gbc.gridy = row;
+    private JPanel profileRow(String label, String value) {
+        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        row.setOpaque(false);
 
-        gbc.gridx = 0;
         JLabel lbl = new JLabel(label);
         lbl.setFont(UITheme.FONT_BODY_BOLD);
-        lbl.setForeground(UITheme.TEXT_MUTED);
-        container.add(lbl, gbc);
+        lbl.setPreferredSize(new Dimension(150, 24));
 
-        gbc.gridx = 1;
         JLabel val = new JLabel(value);
         val.setFont(UITheme.FONT_BODY);
-        val.setForeground(UITheme.TEXT_DARK);
-        container.add(val, gbc);
+
+        row.add(lbl);
+        row.add(val);
+        return row;
     }
 
     private void centerAlignColumns(JTable table, int... columnIndices) {
@@ -354,6 +375,12 @@ public class MemberDashboard extends JFrame {
             if (idx < table.getColumnCount()) {
                 table.getColumnModel().getColumn(idx).setCellRenderer(centerRenderer);
             }
+        }
+    }
+
+    private void setColumnWidths(JTable table, int... widths) {
+        for (int i = 0; i < widths.length && i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
         }
     }
 

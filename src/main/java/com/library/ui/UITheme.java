@@ -2,8 +2,11 @@ package com.library.ui;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
+import java.util.List;
 
 /**
  * Shared color palette, fonts, and small factory helpers used across every UI panel
@@ -95,9 +98,72 @@ public final class UITheme {
     }
 
     public static void styleTableHeader(JTableHeader header) {
-        header.setBackground(PRIMARY);
-        header.setForeground(Color.WHITE);
-        header.setFont(FONT_BODY_BOLD);
-        header.setPreferredSize(new Dimension(header.getWidth(), 34));
+        header.setDefaultRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel l = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                l.setBackground(PRIMARY);
+                l.setForeground(Color.WHITE);
+                l.setFont(FONT_BODY_BOLD);
+                l.setOpaque(true);
+
+                // Align header text to match column cell alignment
+                if (table != null && column < table.getColumnCount()) {
+                    TableCellRenderer cellRenderer = table.getColumnModel().getColumn(column).getCellRenderer();
+                    if (cellRenderer instanceof JLabel) {
+                        l.setHorizontalAlignment(((JLabel) cellRenderer).getHorizontalAlignment());
+                    } else {
+                        l.setHorizontalAlignment(SwingConstants.LEFT);
+                    }
+                } else {
+                    l.setHorizontalAlignment(SwingConstants.LEFT);
+                }
+
+                // Append sort indicator if active
+                String text = (value != null) ? value.toString() : "";
+                if (table != null && table.getRowSorter() != null) {
+                    List<? extends RowSorter.SortKey> sortKeys = table.getRowSorter().getSortKeys();
+                    int modelIndex = table.convertColumnIndexToModel(column);
+                    if (!sortKeys.isEmpty() && sortKeys.get(0).getColumn() == modelIndex) {
+                        SortOrder order = sortKeys.get(0).getSortOrder();
+                        if (order == SortOrder.ASCENDING) {
+                            text += "  ▲";
+                        } else if (order == SortOrder.DESCENDING) {
+                            text += "  ▼";
+                        }
+                    }
+                }
+                l.setText(text);
+
+                // Clean divider border between header columns and along bottom
+                int rightBorder = (table != null && column == table.getColumnCount() - 1) ? 0 : 1;
+                l.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0, 0, 1, rightBorder, PRIMARY_LIGHT),
+                        new EmptyBorder(7, 10, 7, 10)
+                ));
+
+                return l;
+            }
+        });
+
+        header.setPreferredSize(new Dimension(header.getWidth(), 36));
+        header.setReorderingAllowed(false);
+
+        // Keep upper right corner of enclosing JScrollPane matching PRIMARY bg
+        header.addAncestorListener(new javax.swing.event.AncestorListener() {
+            @Override
+            public void ancestorAdded(javax.swing.event.AncestorEvent event) {
+                Container p = header.getParent();
+                if (p instanceof JViewport && p.getParent() instanceof JScrollPane) {
+                    JScrollPane sp = (JScrollPane) p.getParent();
+                    JPanel corner = new JPanel();
+                    corner.setBackground(PRIMARY);
+                    sp.setCorner(JScrollPane.UPPER_RIGHT_CORNER, corner);
+                }
+            }
+            @Override public void ancestorRemoved(javax.swing.event.AncestorEvent event) {}
+            @Override public void ancestorMoved(javax.swing.event.AncestorEvent event) {}
+        });
     }
 }
