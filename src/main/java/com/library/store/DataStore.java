@@ -199,6 +199,44 @@ public final class DataStore {
         books.add(book);
     }
 
+    public boolean updateBook(Book updated) {
+        if (updated == null) {
+            return false;
+        }
+        synchronized (books) {
+            for (int i = 0; i < books.size(); i++) {
+                if (books.get(i).getBookId() == updated.getBookId()) {
+                    books.set(i, updated);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean deleteBook(int bookId) {
+        synchronized (books) {
+            for (int i = 0; i < books.size(); i++) {
+                if (books.get(i).getBookId() == bookId) {
+                    books.remove(i);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean hasActiveBorrowingsForBook(int bookId) {
+        synchronized (borrowings) {
+            for (Borrowing b : borrowings) {
+                if (b.getBookId() == bookId && b.getStatus() == Borrowing.Status.ACTIVE) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public Category addCategory(String name, String desc) {
         Category c = new Category(nextCategoryId(), name, desc);
         categories.add(c);
