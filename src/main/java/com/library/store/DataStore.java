@@ -264,6 +264,47 @@ public final class DataStore {
         members.add(m);
     }
 
+    public boolean updateMember(Member updated) {
+        if (updated == null) {
+            return false;
+        }
+        synchronized (members) {
+            for (int i = 0; i < members.size(); i++) {
+                if (members.get(i).getMemberId() == updated.getMemberId()) {
+                    members.set(i, updated);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean isUsernameOrEmailTaken(String identifier, int excludeMemberId) {
+        if (identifier == null || identifier.trim().isEmpty()) {
+            return false;
+        }
+        String trimmed = identifier.trim();
+        synchronized (admins) {
+            for (Admin admin : admins) {
+                if (trimmed.equalsIgnoreCase(admin.getUsername()) ||
+                        (admin.getEmail() != null && trimmed.equalsIgnoreCase(admin.getEmail()))) {
+                    return true;
+                }
+            }
+        }
+        synchronized (members) {
+            for (Member member : members) {
+                if (member.getMemberId() != excludeMemberId) {
+                    if (trimmed.equalsIgnoreCase(member.getUsername()) ||
+                            (member.getEmail() != null && trimmed.equalsIgnoreCase(member.getEmail()))) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     public Borrowing borrowBook(int memberId, int bookId, int days) {
         Book book = findBookById(bookId);
         if (book == null || book.getAvailableQuantity() <= 0) {
