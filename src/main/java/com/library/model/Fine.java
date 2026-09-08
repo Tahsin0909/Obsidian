@@ -14,17 +14,28 @@ public class Fine implements Serializable {
     private double amount;
     private boolean paid;
     private LocalDate fineDate;
+    private LocalDate paidDate;
+    private String paymentMethod;
+    private String notes;
 
     public Fine() {
     }
 
     public Fine(int fineId, int borrowingId, int memberId, double amount, boolean paid, LocalDate fineDate) {
+        this(fineId, borrowingId, memberId, amount, paid, fineDate, paid ? fineDate : null, paid ? "Cash" : null, "");
+    }
+
+    public Fine(int fineId, int borrowingId, int memberId, double amount, boolean paid,
+                LocalDate fineDate, LocalDate paidDate, String paymentMethod, String notes) {
         this.fineId = fineId;
         this.borrowingId = borrowingId;
         this.memberId = memberId;
         this.amount = amount;
         this.paid = paid;
         this.fineDate = fineDate;
+        this.paidDate = paidDate;
+        this.paymentMethod = paymentMethod;
+        this.notes = notes != null ? notes : "";
     }
 
     public int getFineId() {
@@ -74,4 +85,29 @@ public class Fine implements Serializable {
     public void setFineDate(LocalDate fineDate) {
         this.fineDate = fineDate;
     }
+
+    public LocalDate getPaidDate() {
+        return paidDate;
+    }
+
+    public void setPaidDate(LocalDate paidDate) {
+        this.paidDate = paidDate;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
 }
+

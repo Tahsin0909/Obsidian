@@ -334,6 +334,143 @@ public final class DataStore {
         return false;
     }
 
+    // ---------- Fine Operations ----------
+
+    public void addFine(Fine fine) {
+        if (fine.getFineId() <= 0) {
+            fine.setFineId(nextFineId());
+        }
+        if (fine.getFineDate() == null) {
+            fine.setFineDate(LocalDate.now());
+        }
+        fines.add(fine);
+    }
+
+    public boolean updateFine(Fine updated) {
+        if (updated == null) {
+            return false;
+        }
+        synchronized (fines) {
+            for (int i = 0; i < fines.size(); i++) {
+                if (fines.get(i).getFineId() == updated.getFineId()) {
+                    fines.set(i, updated);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean deleteFine(int fineId) {
+        synchronized (fines) {
+            for (int i = 0; i < fines.size(); i++) {
+                if (fines.get(i).getFineId() == fineId) {
+                    fines.remove(i);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public Fine findFineById(int fineId) {
+        synchronized (fines) {
+            for (Fine f : fines) {
+                if (f.getFineId() == fineId) {
+                    return f;
+                }
+            }
+        }
+        return null;
+    }
+
+    public Fine findFineByBorrowingId(int borrowingId) {
+        synchronized (fines) {
+            for (Fine f : fines) {
+                if (f.getBorrowingId() == borrowingId) {
+                    return f;
+                }
+            }
+        }
+        return null;
+    }
+
+    public List<Fine> findFinesByMemberId(int memberId) {
+        List<Fine> result = new ArrayList<>();
+        synchronized (fines) {
+            for (Fine f : fines) {
+                if (f.getMemberId() == memberId) {
+                    result.add(f);
+                }
+            }
+        }
+        return result;
+    }
+
+    public boolean payFine(int fineId, String paymentMethod, LocalDate paidDate) {
+        synchronized (fines) {
+            for (Fine f : fines) {
+                if (f.getFineId() == fineId) {
+                    f.setPaid(true);
+                    f.setPaidDate(paidDate != null ? paidDate : LocalDate.now());
+                    f.setPaymentMethod(paymentMethod != null && !paymentMethod.trim().isEmpty() ? paymentMethod : "Cash");
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public int payAllFinesForMember(int memberId, String paymentMethod) {
+        int count = 0;
+        synchronized (fines) {
+            for (Fine f : fines) {
+                if (f.getMemberId() == memberId && !f.isPaid()) {
+                    f.setPaid(true);
+                    f.setPaidDate(LocalDate.now());
+                    f.setPaymentMethod(paymentMethod != null && !paymentMethod.trim().isEmpty() ? paymentMethod : "Cash");
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    public double getTotalOutstandingFines() {
+        double total = 0.0;
+        synchronized (fines) {
+            for (Fine f : fines) {
+                if (!f.isPaid()) {
+                    total += f.getAmount();
+                }
+            }
+        }
+        return total;
+    }
+
+    public double getTotalCollectedFines() {
+        double total = 0.0;
+        synchronized (fines) {
+            for (Fine f : fines) {
+                if (f.isPaid()) {
+                    total += f.getAmount();
+                }
+            }
+        }
+        return total;
+    }
+
+    public long calculateOverdueDays(Borrowing b) {
+        if (b == null) {
+            return 0;
+        }
+        LocalDate endDate = b.getReturnDate() != null ? b.getReturnDate() : LocalDate.now();
+        if (b.getDueDate() != null && endDate.isAfter(b.getDueDate())) {
+            return java.time.temporal.ChronoUnit.DAYS.between(b.getDueDate(), endDate);
+        }
+        return 0;
+    }
+
     // ============================================================================
     // DEMO / SEED DATA
     // Credentials pattern: <role>@mail.com / 123456
@@ -369,14 +506,42 @@ public final class DataStore {
         addBook("9780201633610", "Design Patterns", "Erich Gamma", cs, "Addison-Wesley", 1994, 1);
         addBook("9780486243016", "A Brief History of Mathematics", "Isaac Asimov", math, "Fawcett", 1966, 2);
 
-        // --- One demo borrowing already in progress, for a realistic dashboard ---
+        // --- Demo borrowings ---
+        // 1. Active normal loan (Alice)
         Member alice = members.get(0);
         Book cleanCode = books.get(0);
         cleanCode.setAvailableQuantity(cleanCode.getAvailableQuantity() - 1);
-        Borrowing borrowing = new Borrowing(alice.getMemberId(), cleanCode.getBookId(),
+        Borrowing borrowing1 = new Borrowing(alice.getMemberId(), cleanCode.getBookId(),
                 LocalDate.now().minusDays(3), LocalDate.now().plusDays(4));
-        borrowing.setBorrowingId(nextBorrowingId());
-        borrowings.add(borrowing);
+        borrowing1.setBorrowingId(nextBorrowingId());
+        borrowings.add(borrowing1);
+
+        // 2. Overdue loan (Bob Karim, overdue by 7 days)
+        Member bob = members.get(1);
+        Book introAlgorithms = books.get(1);
+        introAlgorithms.setAvailableQuantity(introAlgorithms.getAvailableQuantity() - 1);
+        Borrowing borrowing2 = new Borrowing(bob.getMemberId(), introAlgorithms.getBookId(),
+                LocalDate.now().minusDays(21), LocalDate.now().minusDays(7));
+        borrowing2.setBorrowingId(nextBorrowingId());
+        borrowings.add(borrowing2);
+
+        // 3. Past returned overdue loan (Chloe Islam)
+        Member chloe = members.get(2);
+        Borrowing borrowing3 = new Borrowing(nextBorrowingId(), chloe.getMemberId(), books.get(2).getBookId(),
+                LocalDate.now().minusDays(25), LocalDate.now().minusDays(15),
+                LocalDate.now().minusDays(12), Borrowing.Status.RETURNED);
+        borrowings.add(borrowing3);
+
+        // --- Demo Fines ---
+        // Fine for Bob's active overdue loan (Unpaid, $7.00 @ $1/day)
+        Fine fine1 = new Fine(nextFineId(), borrowing2.getBorrowingId(), bob.getMemberId(),
+                7.00, false, LocalDate.now().minusDays(2), null, null, "Overdue by 7 days ($1.00/day)");
+        fines.add(fine1);
+
+        // Fine for Chloe's returned overdue loan (Paid, $3.00)
+        Fine fine2 = new Fine(nextFineId(), borrowing3.getBorrowingId(), chloe.getMemberId(),
+                3.00, true, LocalDate.now().minusDays(12), LocalDate.now().minusDays(11), "Cash", "Paid at front desk");
+        fines.add(fine2);
     }
 
     private void addBook(String isbn, String title, String author, Category category,
