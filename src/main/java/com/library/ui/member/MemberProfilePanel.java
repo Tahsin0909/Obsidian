@@ -39,14 +39,14 @@ public class MemberProfilePanel extends JPanel {
         this.member = member;
 
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
+        setBackground(UITheme.CARD_BG);
 
         buildUI();
     }
 
     private void buildUI() {
         JPanel contentPanel = new JPanel(new BorderLayout(0, 14));
-        contentPanel.setBackground(Color.WHITE);
+        contentPanel.setBackground(UITheme.CARD_BG);
         contentPanel.setBorder(new EmptyBorder(16, 20, 16, 20));
 
         // 1. Profile Banner Header
@@ -63,9 +63,10 @@ public class MemberProfilePanel extends JPanel {
 
         profileHeaderNameLabel = new JLabel(member.getName());
         profileHeaderNameLabel.setFont(UITheme.FONT_TITLE);
-        profileHeaderNameLabel.setForeground(UITheme.PRIMARY);
+        profileHeaderNameLabel.setForeground(UITheme.PRIMARY_TEXT);
 
-        profileHeaderSubLabel = new JLabel("Member ID #" + member.getMemberId() + "  •  " + member.getEmail() + "  •  Status: " + member.getStatus());
+        profileHeaderSubLabel = new JLabel("Member ID #" + member.getMemberId() + "  •  " + member.getEmail()
+                + "  •  Status: " + member.getStatus());
         profileHeaderSubLabel.setFont(UITheme.FONT_BODY);
         profileHeaderSubLabel.setForeground(UITheme.TEXT_MUTED);
 
@@ -106,7 +107,7 @@ public class MemberProfilePanel extends JPanel {
 
         JLabel title = new JLabel("Personal Information");
         title.setFont(UITheme.FONT_HEADING);
-        title.setForeground(UITheme.PRIMARY);
+        title.setForeground(UITheme.PRIMARY_TEXT);
 
         JPanel form = new JPanel(new GridBagLayout());
         form.setOpaque(false);
@@ -116,9 +117,9 @@ public class MemberProfilePanel extends JPanel {
 
         JTextField memberIdField = new JTextField("#" + member.getMemberId());
         memberIdField.setEditable(false);
-        memberIdField.setBackground(new Color(0xF4, 0xF6, 0xF8));
+        memberIdField.setBackground(UITheme.INPUT_BG);
         memberIdField.setFont(UITheme.FONT_BODY_BOLD);
-        memberIdField.setForeground(UITheme.PRIMARY);
+        memberIdField.setForeground(UITheme.PRIMARY_TEXT);
 
         profileNameField = new JTextField(member.getName());
         profileNameField.setFont(UITheme.FONT_BODY);
@@ -135,16 +136,18 @@ public class MemberProfilePanel extends JPanel {
         profileAddressField = new JTextField(member.getAddress() != null ? member.getAddress() : "");
         profileAddressField.setFont(UITheme.FONT_BODY);
 
-        JTextField membershipDateField = new JTextField(member.getMembershipDate() != null ? member.getMembershipDate().toString() : "-");
+        JTextField membershipDateField = new JTextField(
+                member.getMembershipDate() != null ? member.getMembershipDate().toString() : "-");
         membershipDateField.setEditable(false);
-        membershipDateField.setBackground(new Color(0xF4, 0xF6, 0xF8));
+        membershipDateField.setBackground(UITheme.INPUT_BG);
         membershipDateField.setFont(UITheme.FONT_BODY);
+        membershipDateField.setForeground(UITheme.TEXT_DARK);
 
         JTextField statusField = new JTextField(member.getStatus() != null ? member.getStatus().name() : "ACTIVE");
         statusField.setEditable(false);
-        statusField.setBackground(new Color(0xF4, 0xF6, 0xF8));
+        statusField.setBackground(UITheme.INPUT_BG);
         statusField.setFont(UITheme.FONT_BODY_BOLD);
-        statusField.setForeground(member.getStatus() == Member.Status.ACTIVE ? new Color(0x1B, 0x7A, 0x4B) : UITheme.DANGER);
+        statusField.setForeground(member.getStatus() == Member.Status.ACTIVE ? UITheme.ACCENT : UITheme.DANGER);
 
         UIHelper.addFormField(form, gbc, 0, "Member ID:", memberIdField);
         UIHelper.addFormField(form, gbc, 1, "Full Name *:", profileNameField);
@@ -189,7 +192,7 @@ public class MemberProfilePanel extends JPanel {
 
         JLabel title = new JLabel("Security & Password");
         title.setFont(UITheme.FONT_HEADING);
-        title.setForeground(UITheme.PRIMARY);
+        title.setForeground(UITheme.PRIMARY_TEXT);
 
         JPanel form = new JPanel(new GridBagLayout());
         form.setOpaque(false);
@@ -206,7 +209,8 @@ public class MemberProfilePanel extends JPanel {
         confirmPasswordField = new JPasswordField();
         confirmPasswordField.setFont(UITheme.FONT_BODY);
 
-        JLabel infoLabel = new JLabel("<html><span style='color:#6B7684; font-size:11px;'>Password must be at least 4 characters long and verified against your current password.</span></html>");
+        JLabel infoLabel = new JLabel(
+                "<html><span style='color:#6B7684; font-size:11px;'>Password must be at least 4 characters long and verified against your current password.</span></html>");
 
         UIHelper.addFormField(form, gbc, 0, "Current Password *:", currentPasswordField);
         UIHelper.addFormField(form, gbc, 1, "New Password *:", newPasswordField);
@@ -238,11 +242,16 @@ public class MemberProfilePanel extends JPanel {
     }
 
     public void resetProfileFields() {
-        if (profileNameField != null) profileNameField.setText(member.getName());
-        if (profileUsernameField != null) profileUsernameField.setText(member.getUsername());
-        if (profileEmailField != null) profileEmailField.setText(member.getEmail());
-        if (profilePhoneField != null) profilePhoneField.setText(member.getPhone() != null ? member.getPhone() : "");
-        if (profileAddressField != null) profileAddressField.setText(member.getAddress() != null ? member.getAddress() : "");
+        if (profileNameField != null)
+            profileNameField.setText(member.getName());
+        if (profileUsernameField != null)
+            profileUsernameField.setText(member.getUsername());
+        if (profileEmailField != null)
+            profileEmailField.setText(member.getEmail());
+        if (profilePhoneField != null)
+            profilePhoneField.setText(member.getPhone() != null ? member.getPhone() : "");
+        if (profileAddressField != null)
+            profileAddressField.setText(member.getAddress() != null ? member.getAddress() : "");
     }
 
     public void saveProfileChanges() {
@@ -300,7 +309,8 @@ public class MemberProfilePanel extends JPanel {
             profileHeaderNameLabel.setText(member.getName());
         }
         if (profileHeaderSubLabel != null) {
-            profileHeaderSubLabel.setText("Member ID #" + member.getMemberId() + "  •  " + member.getEmail() + "  •  Status: " + member.getStatus());
+            profileHeaderSubLabel.setText("Member ID #" + member.getMemberId() + "  •  " + member.getEmail()
+                    + "  •  Status: " + member.getStatus());
         }
 
         // Notify dashboard to update header greeting and badges

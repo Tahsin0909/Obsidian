@@ -3,6 +3,7 @@ package com.library.ui;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Image;
@@ -77,72 +78,77 @@ public class LoginFrame extends JFrame {
                 // ==================== RIGHT LOGIN SECTION ====================
 
                 JPanel loginPanel = new JPanel();
+                loginPanel.setBackground(UITheme.CARD_BG);
 
                 loginPanel.setLayout(
                                 new BoxLayout(loginPanel, BoxLayout.Y_AXIS));
 
                 loginPanel.setBorder(
                                 BorderFactory.createEmptyBorder(
-                                                60, 50, 60, 50));
+                                                40, 50, 40, 50));
+
+                // Theme Toggle Top Bar
+                JPanel topBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+                topBar.setOpaque(false);
+                topBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
+                topBar.setAlignmentX(Component.CENTER_ALIGNMENT);
+                JButton themeToggleBtn = UITheme.createThemeToggleButton(() -> {
+                        getContentPane().removeAll();
+                        buildUI();
+                        getContentPane().revalidate();
+                        getContentPane().repaint();
+                });
+                topBar.add(themeToggleBtn);
 
                 // ==================== LOGIN TITLE ====================
 
                 JLabel title = new JLabel("Welcome Back");
-
-                title.setFont(
-                                new Font("Arial", Font.BOLD, 26));
-
+                title.setFont(new Font("Arial", Font.BOLD, 26));
+                title.setForeground(UITheme.TEXT_DARK);
                 title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
                 JLabel subtitle = new JLabel("Sign in to continue");
-
-                subtitle.setAlignmentX(
-                                Component.CENTER_ALIGNMENT);
+                subtitle.setForeground(UITheme.TEXT_MUTED);
+                subtitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 
                 // ==================== EMAIL ====================
 
                 JLabel emailLabel = new JLabel("Email", SwingConstants.LEFT);
-
-                emailLabel.setAlignmentX(
-                                Component.CENTER_ALIGNMENT);
-
+                emailLabel.setFont(UITheme.FONT_BODY_BOLD);
+                emailLabel.setForeground(UITheme.TEXT_DARK);
+                emailLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
                 emailLabel.setMaximumSize(
                                 new Dimension(
                                                 Integer.MAX_VALUE,
                                                 emailLabel.getPreferredSize().height));
 
                 emailField = new JTextField();
-
+                UITheme.styleTextField(emailField);
                 emailField.setMaximumSize(
                                 new Dimension(
                                                 Integer.MAX_VALUE,
                                                 35));
-
-                emailField.setAlignmentX(
-                                Component.CENTER_ALIGNMENT);
+                emailField.setAlignmentX(Component.CENTER_ALIGNMENT);
                 emailField.addActionListener(e -> onLogin());
 
                 // ==================== PASSWORD ====================
 
                 JLabel passwordLabel = new JLabel("Password", SwingConstants.LEFT);
-
-                passwordLabel.setAlignmentX(
-                                Component.CENTER_ALIGNMENT);
-
+                passwordLabel.setFont(UITheme.FONT_BODY_BOLD);
+                passwordLabel.setForeground(UITheme.TEXT_DARK);
+                passwordLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
                 passwordLabel.setMaximumSize(
                                 new Dimension(
                                                 Integer.MAX_VALUE,
                                                 passwordLabel.getPreferredSize().height));
 
                 passwordField = new JPasswordField();
-
+                UITheme.styleTextField(passwordField);
                 passwordField.setMaximumSize(
                                 new Dimension(
                                                 Integer.MAX_VALUE,
                                                 35));
-
-                passwordField.setAlignmentX(
-                                Component.CENTER_ALIGNMENT);
+                passwordField.setAlignmentX(Component.CENTER_ALIGNMENT);
                 passwordField.addActionListener(e -> onLogin());
 
                 // ==================== LOGIN BUTTON ====================
@@ -180,6 +186,11 @@ public class LoginFrame extends JFrame {
                                                 Integer.MAX_VALUE,
                                                 hint.getPreferredSize().height));
                 // ==================== ADD COMPONENTS ====================
+
+                loginPanel.add(topBar);
+
+                loginPanel.add(
+                                Box.createVerticalStrut(15));
 
                 loginPanel.add(title);
 

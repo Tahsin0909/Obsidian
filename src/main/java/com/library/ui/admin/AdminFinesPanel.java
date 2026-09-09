@@ -20,7 +20,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Panel managing fine assessments, auto-calculations, payment settlement, member balance overviews, and fee waivers.
+ * Panel managing fine assessments, auto-calculations, payment settlement,
+ * member balance overviews, and fee waivers.
  */
 public class AdminFinesPanel extends JPanel {
 
@@ -43,7 +44,7 @@ public class AdminFinesPanel extends JPanel {
 
     private void buildUI() {
         setLayout(new BorderLayout(0, 10));
-        setBackground(Color.WHITE);
+        setBackground(UITheme.CARD_BG);
         setBorder(new EmptyBorder(14, 14, 14, 14));
 
         // Top Summary Metric Strip
@@ -61,21 +62,25 @@ public class AdminFinesPanel extends JPanel {
 
         JLabel searchLbl = new JLabel("Search:");
         searchLbl.setFont(UITheme.FONT_BODY_BOLD);
+        searchLbl.setForeground(UITheme.TEXT_DARK);
         fineSearchField = new JTextField();
+        UITheme.styleTextField(fineSearchField);
         fineSearchField.setPreferredSize(new Dimension(150, 28));
 
         JLabel statusLbl = new JLabel("Status:");
         statusLbl.setFont(UITheme.FONT_BODY_BOLD);
+        statusLbl.setForeground(UITheme.TEXT_DARK);
         String[] statusFilters = { "All Fines", "Unpaid Fines Only", "Paid Fines Only" };
         fineFilterCombo = new JComboBox<>(statusFilters);
-        fineFilterCombo.setFont(UITheme.FONT_BODY);
+        UITheme.styleComboBox(fineFilterCombo);
         fineFilterCombo.setPreferredSize(new Dimension(135, 28));
         fineFilterCombo.addActionListener(e -> refresh());
 
         JLabel memberLbl = new JLabel("Member:");
         memberLbl.setFont(UITheme.FONT_BODY_BOLD);
+        memberLbl.setForeground(UITheme.TEXT_DARK);
         fineMemberFilterCombo = new JComboBox<>();
-        fineMemberFilterCombo.setFont(UITheme.FONT_BODY);
+        UITheme.styleComboBox(fineMemberFilterCombo);
         fineMemberFilterCombo.setPreferredSize(new Dimension(150, 28));
         refreshMemberFilterCombo();
         fineMemberFilterCombo.addActionListener(e -> refresh());
@@ -118,7 +123,8 @@ public class AdminFinesPanel extends JPanel {
         toolbarPanel.add(row2);
 
         // Fines Table
-        String[] cols = { "Fine ID", "Borrow ID", "Member Name", "Book Title", "Overdue Days", "Fine Amount ($)", "Assessed Date", "Paid Date", "Payment Method", "Status" };
+        String[] cols = { "Fine ID", "Borrow ID", "Member Name", "Book Title", "Overdue Days", "Fine Amount ($)",
+                "Assessed Date", "Paid Date", "Payment Method", "Status" };
         finesTableModel = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -128,21 +134,20 @@ public class AdminFinesPanel extends JPanel {
 
         finesTable = new JTable(finesTableModel);
         finesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        finesTable.setFillsViewportHeight(true);
-        finesTable.setFont(UITheme.FONT_BODY);
-        finesTable.setRowHeight(28);
         finesTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        UITheme.styleTableHeader(finesTable.getTableHeader());
+        UITheme.styleTable(finesTable);
 
         // Custom Status Renderer
         finesTable.getColumnModel().getColumn(9).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                JLabel l = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                    boolean hasFocus, int row, int column) {
+                JLabel l = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row,
+                        column);
                 l.setHorizontalAlignment(SwingConstants.CENTER);
                 String valStr = value != null ? value.toString() : "";
                 if ("PAID".equalsIgnoreCase(valStr)) {
-                    l.setForeground(new Color(0x1B, 0x7A, 0x4B));
+                    l.setForeground(UITheme.ACCENT);
                     l.setFont(UITheme.FONT_BODY_BOLD);
                 } else if ("UNPAID".equalsIgnoreCase(valStr)) {
                     l.setForeground(UITheme.DANGER);
@@ -167,9 +172,17 @@ public class AdminFinesPanel extends JPanel {
         });
 
         fineSearchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { filter(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { filter(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { filter(); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
+
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
+
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
 
             private void filter() {
                 String text = fineSearchField.getText().trim();
@@ -215,7 +228,8 @@ public class AdminFinesPanel extends JPanel {
     }
 
     public void refreshMemberFilterCombo() {
-        if (fineMemberFilterCombo == null) return;
+        if (fineMemberFilterCombo == null)
+            return;
         fineMemberFilterCombo.removeAllItems();
         fineMemberFilterCombo.addItem("All Members");
         for (Member m : store.members()) {
@@ -224,11 +238,13 @@ public class AdminFinesPanel extends JPanel {
     }
 
     public void refresh() {
-        if (finesTableModel == null) return;
+        if (finesTableModel == null)
+            return;
         finesTableModel.setRowCount(0);
 
         String statusFilter = fineFilterCombo != null ? (String) fineFilterCombo.getSelectedItem() : "All Fines";
-        String memberFilter = fineMemberFilterCombo != null ? (String) fineMemberFilterCombo.getSelectedItem() : "All Members";
+        String memberFilter = fineMemberFilterCombo != null ? (String) fineMemberFilterCombo.getSelectedItem()
+                : "All Members";
 
         int targetMemberId = -1;
         if (memberFilter != null && !memberFilter.equals("All Members") && memberFilter.contains("#")) {
@@ -236,7 +252,8 @@ public class AdminFinesPanel extends JPanel {
                 String idSub = memberFilter.substring(memberFilter.indexOf('#') + 1);
                 idSub = idSub.substring(0, idSub.indexOf(')'));
                 targetMemberId = Integer.parseInt(idSub);
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
 
         double totalAssessed = 0.0;
@@ -256,11 +273,14 @@ public class AdminFinesPanel extends JPanel {
             }
 
             // Apply status filter
-            if ("Unpaid Fines Only".equals(statusFilter) && f.isPaid()) continue;
-            if ("Paid Fines Only".equals(statusFilter) && !f.isPaid()) continue;
+            if ("Unpaid Fines Only".equals(statusFilter) && f.isPaid())
+                continue;
+            if ("Paid Fines Only".equals(statusFilter) && !f.isPaid())
+                continue;
 
             // Apply member filter
-            if (targetMemberId != -1 && f.getMemberId() != targetMemberId) continue;
+            if (targetMemberId != -1 && f.getMemberId() != targetMemberId)
+                continue;
 
             Member member = store.findMemberById(f.getMemberId());
             String memberName = member != null ? member.getName() : "Member #" + f.getMemberId();
@@ -283,7 +303,8 @@ public class AdminFinesPanel extends JPanel {
 
             String statusStr = f.isPaid() ? "PAID" : "UNPAID";
             String paidDateStr = f.getPaidDate() != null ? f.getPaidDate().toString() : "-";
-            String methodStr = f.getPaymentMethod() != null && !f.getPaymentMethod().isEmpty() ? f.getPaymentMethod() : (f.isPaid() ? "Cash" : "-");
+            String methodStr = f.getPaymentMethod() != null && !f.getPaymentMethod().isEmpty() ? f.getPaymentMethod()
+                    : (f.isPaid() ? "Cash" : "-");
 
             finesTableModel.addRow(new Object[] {
                     f.getFineId(),
@@ -311,9 +332,11 @@ public class AdminFinesPanel extends JPanel {
     }
 
     public Fine getSelectedFine() {
-        if (finesTable == null) return null;
+        if (finesTable == null)
+            return null;
         int selectedRow = finesTable.getSelectedRow();
-        if (selectedRow == -1) return null;
+        if (selectedRow == -1)
+            return null;
         int modelRow = finesTable.convertRowIndexToModel(selectedRow);
         int fineId = (Integer) finesTableModel.getValueAt(modelRow, 0);
         return store.findFineById(fineId);
@@ -326,7 +349,7 @@ public class AdminFinesPanel extends JPanel {
         dialog.setResizable(false);
 
         JPanel root = new JPanel(new BorderLayout(0, 14));
-        root.setBackground(Color.WHITE);
+        root.setBackground(UITheme.CARD_BG);
         root.setBorder(new EmptyBorder(18, 20, 18, 20));
 
         JPanel headerPanel = new JPanel(new BorderLayout(0, 4));
@@ -351,7 +374,8 @@ public class AdminFinesPanel extends JPanel {
         borrowingCombo.setFont(UITheme.FONT_BODY);
         borrowingCombo.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                    boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof Borrowing) {
                     Borrowing b = (Borrowing) value;
@@ -360,7 +384,8 @@ public class AdminFinesPanel extends JPanel {
                     String bTitle = book != null ? book.getTitle() : "Book #" + b.getBookId();
                     String mName = member != null ? member.getName() : "Member #" + b.getMemberId();
                     long days = store.calculateOverdueDays(b);
-                    String tag = days > 0 ? " [OVERDUE: " + days + "d]" : (b.getStatus() == Borrowing.Status.RETURNED ? " [RETURNED]" : " [ACTIVE]");
+                    String tag = days > 0 ? " [OVERDUE: " + days + "d]"
+                            : (b.getStatus() == Borrowing.Status.RETURNED ? " [RETURNED]" : " [ACTIVE]");
                     setText("#" + b.getBorrowingId() + ": " + bTitle + " (" + mName + ")" + tag);
                 }
                 return this;
@@ -428,7 +453,8 @@ public class AdminFinesPanel extends JPanel {
                 Book book = store.findBookById(b.getBookId());
                 long days = store.calculateOverdueDays(b);
 
-                memberNameVal.setText(m != null ? m.getName() + " (ID: #" + m.getMemberId() + ")" : "Member #" + b.getMemberId());
+                memberNameVal.setText(
+                        m != null ? m.getName() + " (ID: #" + m.getMemberId() + ")" : "Member #" + b.getMemberId());
                 bookTitleVal.setText(book != null ? book.getTitle() : "Book #" + b.getBookId());
                 dueDateVal.setText(b.getDueDate() != null ? b.getDueDate().toString() : "-");
                 overdueDaysVal.setText(days + " day(s) overdue");
@@ -440,7 +466,8 @@ public class AdminFinesPanel extends JPanel {
                     double total = Math.max(0, days * rate);
                     calculatedAmountVal.setText(String.format("$%.2f", total));
                     if (notesField.getText().isEmpty() && days > 0) {
-                        notesField.setText("Late return fee: " + days + " days overdue @ $" + String.format("%.2f", rate) + "/day");
+                        notesField.setText("Late return fee: " + days + " days overdue @ $"
+                                + String.format("%.2f", rate) + "/day");
                     }
                 }
             }
@@ -471,7 +498,8 @@ public class AdminFinesPanel extends JPanel {
         saveFineBtn.addActionListener(e -> {
             Borrowing selectedBorrowing = (Borrowing) borrowingCombo.getSelectedItem();
             if (selectedBorrowing == null) {
-                JOptionPane.showMessageDialog(dialog, "Please select a borrowing record.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Please select a borrowing record.", "Validation Error",
+                        JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
@@ -490,15 +518,17 @@ public class AdminFinesPanel extends JPanel {
                         "Confirm Fine Assessment",
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.QUESTION_MESSAGE);
-                if (proceed != JOptionPane.YES_OPTION) return;
+                if (proceed != JOptionPane.YES_OPTION)
+                    return;
             }
 
             Fine existingFine = store.findFineByBorrowingId(selectedBorrowing.getBorrowingId());
             if (existingFine != null && !existingFine.isPaid()) {
                 int replaceChoice = JOptionPane.showConfirmDialog(dialog,
                         "An unpaid fine of $" + String.format("%.2f", existingFine.getAmount()) +
-                        " already exists for this borrowing (Fine #" + existingFine.getFineId() + ").\n\n" +
-                        "Would you like to update the existing fine amount to $" + String.format("%.2f", amount) + "?",
+                                " already exists for this borrowing (Fine #" + existingFine.getFineId() + ").\n\n" +
+                                "Would you like to update the existing fine amount to $" + String.format("%.2f", amount)
+                                + "?",
                         "Fine Already Exists",
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.QUESTION_MESSAGE);
@@ -510,7 +540,10 @@ public class AdminFinesPanel extends JPanel {
                     refresh();
                     dashboard.refreshKpis();
                     dialog.dispose();
-                    JOptionPane.showMessageDialog(dashboard, "Fine #" + existingFine.getFineId() + " updated successfully to $" + String.format("%.2f", amount) + "!", "Fine Updated", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(dashboard,
+                            "Fine #" + existingFine.getFineId() + " updated successfully to $"
+                                    + String.format("%.2f", amount) + "!",
+                            "Fine Updated", JOptionPane.INFORMATION_MESSAGE);
                 }
                 return;
             }
@@ -524,8 +557,7 @@ public class AdminFinesPanel extends JPanel {
                     LocalDate.now(),
                     null,
                     null,
-                    notesField.getText().trim()
-            );
+                    notesField.getText().trim());
 
             store.addFine(newFine);
             refresh();
@@ -535,7 +567,8 @@ public class AdminFinesPanel extends JPanel {
             Member m = store.findMemberById(selectedBorrowing.getMemberId());
             String mName = m != null ? m.getName() : "Member #" + selectedBorrowing.getMemberId();
             JOptionPane.showMessageDialog(dashboard,
-                    "Fine of $" + String.format("%.2f", amount) + " successfully assessed to " + mName + "!\nFine ID: #" + newFine.getFineId(),
+                    "Fine of $" + String.format("%.2f", amount) + " successfully assessed to " + mName + "!\nFine ID: #"
+                            + newFine.getFineId(),
                     "Fine Assessed",
                     JOptionPane.INFORMATION_MESSAGE);
         });
@@ -573,14 +606,15 @@ public class AdminFinesPanel extends JPanel {
                             LocalDate.now(),
                             null,
                             null,
-                            "Auto-assessed: " + overdueDays + " days overdue @ $" + String.format("%.2f", defaultRate) + "/day"
-                    );
+                            "Auto-assessed: " + overdueDays + " days overdue @ $" + String.format("%.2f", defaultRate)
+                                    + "/day");
                     store.addFine(newFine);
                     newlyAssessed++;
                     totalNewAmount += calculatedAmount;
                 } else if (!existingFine.isPaid() && existingFine.getAmount() < calculatedAmount) {
                     existingFine.setAmount(calculatedAmount);
-                    existingFine.setNotes("Updated auto-assessment: " + overdueDays + " days overdue @ $" + String.format("%.2f", defaultRate) + "/day");
+                    existingFine.setNotes("Updated auto-assessment: " + overdueDays + " days overdue @ $"
+                            + String.format("%.2f", defaultRate) + "/day");
                     store.updateFine(existingFine);
                     updated++;
                 }
@@ -598,9 +632,10 @@ public class AdminFinesPanel extends JPanel {
         } else {
             JOptionPane.showMessageDialog(dashboard,
                     "Batch Auto-Assessment Complete!\n\n" +
-                    "• Newly assessed fines: " + newlyAssessed + " (Total: $" + String.format("%.2f", totalNewAmount) + ")\n" +
-                    "• Updated overdue fines: " + updated + "\n" +
-                    "Standard Rate Applied: $" + String.format("%.2f", defaultRate) + " / day",
+                            "• Newly assessed fines: " + newlyAssessed + " (Total: $"
+                            + String.format("%.2f", totalNewAmount) + ")\n" +
+                            "• Updated overdue fines: " + updated + "\n" +
+                            "Standard Rate Applied: $" + String.format("%.2f", defaultRate) + " / day",
                     "Fines Successfully Calculated",
                     JOptionPane.INFORMATION_MESSAGE);
         }
@@ -613,7 +648,7 @@ public class AdminFinesPanel extends JPanel {
         dialog.setResizable(false);
 
         JPanel root = new JPanel(new BorderLayout(0, 12));
-        root.setBackground(Color.WHITE);
+        root.setBackground(UITheme.CARD_BG);
         root.setBorder(new EmptyBorder(18, 20, 18, 20));
 
         JPanel headerPanel = new JPanel(new BorderLayout(0, 4));
@@ -638,7 +673,8 @@ public class AdminFinesPanel extends JPanel {
         memberCombo.setPreferredSize(new Dimension(280, 30));
         memberCombo.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                    boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof Member) {
                     Member m = (Member) value;
@@ -684,8 +720,10 @@ public class AdminFinesPanel extends JPanel {
 
         memberFinesTable.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                JLabel l = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                    boolean hasFocus, int row, int column) {
+                JLabel l = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row,
+                        column);
                 l.setHorizontalAlignment(SwingConstants.CENTER);
                 String valStr = value != null ? value.toString() : "";
                 if ("PAID".equalsIgnoreCase(valStr)) {
@@ -705,7 +743,8 @@ public class AdminFinesPanel extends JPanel {
         Runnable refreshMemberFinesView = () -> {
             Member selected = (Member) memberCombo.getSelectedItem();
             memberFinesModel.setRowCount(0);
-            if (selected == null) return;
+            if (selected == null)
+                return;
 
             List<Fine> list = store.findFinesByMemberId(selected.getMemberId());
             double assessed = 0.0;
@@ -748,12 +787,14 @@ public class AdminFinesPanel extends JPanel {
         JButton payAllBtn = UITheme.accentButton("Pay All Unpaid Fines");
         payAllBtn.addActionListener(e -> {
             Member selected = (Member) memberCombo.getSelectedItem();
-            if (selected == null) return;
+            if (selected == null)
+                return;
 
             List<Fine> memberFines = store.findFinesByMemberId(selected.getMemberId());
             long unpaidCount = memberFines.stream().filter(f -> !f.isPaid()).count();
             if (unpaidCount == 0) {
-                JOptionPane.showMessageDialog(dialog, "This member currently has no unpaid fines.", "Zero Balance", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "This member currently has no unpaid fines.", "Zero Balance",
+                        JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
 
@@ -761,8 +802,8 @@ public class AdminFinesPanel extends JPanel {
             String[] methods = { "Cash", "Credit/Debit Card", "Online Transfer", "Library Credit" };
             String method = (String) JOptionPane.showInputDialog(dialog,
                     "Settle all " + unpaidCount + " unpaid fine(s) for " + selected.getName() + ".\n" +
-                    "Total Amount Due: $" + String.format("%.2f", unpaidSum) + "\n\n" +
-                    "Select Payment Method:",
+                            "Total Amount Due: $" + String.format("%.2f", unpaidSum) + "\n\n" +
+                            "Select Payment Method:",
                     "Pay All Member Fines",
                     JOptionPane.QUESTION_MESSAGE,
                     null,
@@ -776,7 +817,7 @@ public class AdminFinesPanel extends JPanel {
                 dashboard.refreshKpis();
                 JOptionPane.showMessageDialog(dialog,
                         "Successfully settled " + settled + " fine(s) for " + selected.getName() + "!\n" +
-                        "Amount Paid: $" + String.format("%.2f", unpaidSum) + " via " + method,
+                                "Amount Paid: $" + String.format("%.2f", unpaidSum) + " via " + method,
                         "Payment Successful",
                         JOptionPane.INFORMATION_MESSAGE);
             }
@@ -802,17 +843,19 @@ public class AdminFinesPanel extends JPanel {
     private void onProcessFinePaymentClicked() {
         Fine fine = getSelectedFine();
         if (fine == null) {
-            JOptionPane.showMessageDialog(dashboard, "Please select a fine from the table to process payment.", "No Fine Selected", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(dashboard, "Please select a fine from the table to process payment.",
+                    "No Fine Selected", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         if (fine.isPaid()) {
             JOptionPane.showMessageDialog(dashboard,
                     "Fine #" + fine.getFineId() + " is already PAID.\n\n" +
-                    "Amount: $" + String.format("%.2f", fine.getAmount()) + "\n" +
-                    "Paid Date: " + fine.getPaidDate() + "\n" +
-                    "Payment Method: " + (fine.getPaymentMethod() != null ? fine.getPaymentMethod() : "Cash") + "\n" +
-                    "Notes: " + (fine.getNotes() != null && !fine.getNotes().isEmpty() ? fine.getNotes() : "-"),
+                            "Amount: $" + String.format("%.2f", fine.getAmount()) + "\n" +
+                            "Paid Date: " + fine.getPaidDate() + "\n" +
+                            "Payment Method: " + (fine.getPaymentMethod() != null ? fine.getPaymentMethod() : "Cash")
+                            + "\n" +
+                            "Notes: " + (fine.getNotes() != null && !fine.getNotes().isEmpty() ? fine.getNotes() : "-"),
                     "Fine Already Paid",
                     JOptionPane.INFORMATION_MESSAGE);
             return;
@@ -828,7 +871,7 @@ public class AdminFinesPanel extends JPanel {
         dialog.setResizable(false);
 
         JPanel root = new JPanel(new BorderLayout(0, 14));
-        root.setBackground(Color.WHITE);
+        root.setBackground(UITheme.CARD_BG);
         root.setBorder(new EmptyBorder(18, 20, 18, 20));
 
         JPanel headerPanel = new JPanel(new BorderLayout(0, 4));
@@ -843,7 +886,8 @@ public class AdminFinesPanel extends JPanel {
         headerPanel.add(sub, BorderLayout.SOUTH);
 
         Member member = store.findMemberById(fine.getMemberId());
-        String memberName = member != null ? member.getName() + " (#" + member.getMemberId() + ")" : "Member #" + fine.getMemberId();
+        String memberName = member != null ? member.getName() + " (#" + member.getMemberId() + ")"
+                : "Member #" + fine.getMemberId();
 
         Borrowing borrowing = null;
         for (Borrowing b : store.borrowings()) {
@@ -853,7 +897,8 @@ public class AdminFinesPanel extends JPanel {
             }
         }
         Book book = borrowing != null ? store.findBookById(borrowing.getBookId()) : null;
-        String bookTitle = book != null ? book.getTitle() : (borrowing != null ? "Book #" + borrowing.getBookId() : "-");
+        String bookTitle = book != null ? book.getTitle()
+                : (borrowing != null ? "Book #" + borrowing.getBookId() : "-");
 
         JPanel form = new JPanel(new GridBagLayout());
         form.setOpaque(false);
@@ -863,16 +908,19 @@ public class AdminFinesPanel extends JPanel {
 
         JLabel memberVal = new JLabel(memberName);
         memberVal.setFont(UITheme.FONT_BODY_BOLD);
+        memberVal.setForeground(UITheme.TEXT_DARK);
 
         JLabel bookVal = new JLabel(bookTitle);
         bookVal.setFont(UITheme.FONT_BODY);
+        bookVal.setForeground(UITheme.TEXT_DARK);
 
         JLabel amountVal = new JLabel(String.format("$%.2f", fine.getAmount()));
         amountVal.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        amountVal.setForeground(new Color(0x1B, 0x7A, 0x4B));
+        amountVal.setForeground(UITheme.ACCENT);
 
         JLabel assessedDateVal = new JLabel(fine.getFineDate() != null ? fine.getFineDate().toString() : "-");
         assessedDateVal.setFont(UITheme.FONT_BODY);
+        assessedDateVal.setForeground(UITheme.TEXT_DARK);
 
         String[] methods = { "Cash", "Credit/Debit Card", "Online Transfer", "Library Credit" };
         JComboBox<String> methodCombo = new JComboBox<>(methods);
@@ -912,11 +960,11 @@ public class AdminFinesPanel extends JPanel {
 
             JOptionPane.showMessageDialog(dashboard,
                     "Payment of $" + String.format("%.2f", fine.getAmount()) + " received successfully!\n\n" +
-                    "Receipt Summary:\n" +
-                    "• Fine ID: #" + fine.getFineId() + "\n" +
-                    "• Member: " + memberName + "\n" +
-                    "• Payment Method: " + selectedMethod + "\n" +
-                    "• Date: " + LocalDate.now(),
+                            "Receipt Summary:\n" +
+                            "• Fine ID: #" + fine.getFineId() + "\n" +
+                            "• Member: " + memberName + "\n" +
+                            "• Payment Method: " + selectedMethod + "\n" +
+                            "• Date: " + LocalDate.now(),
                     "Payment Confirmed",
                     JOptionPane.INFORMATION_MESSAGE);
         });
@@ -935,16 +983,17 @@ public class AdminFinesPanel extends JPanel {
     private void onWaiveFineClicked() {
         Fine fine = getSelectedFine();
         if (fine == null) {
-            JOptionPane.showMessageDialog(dashboard, "Please select a fine from the table to waive.", "No Fine Selected", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(dashboard, "Please select a fine from the table to waive.",
+                    "No Fine Selected", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         int choice = JOptionPane.showConfirmDialog(dashboard,
                 "Are you sure you want to waive and remove Fine #" + fine.getFineId() + "?\n\n" +
-                "Amount: $" + String.format("%.2f", fine.getAmount()) + "\n" +
-                "Member ID: #" + fine.getMemberId() + "\n" +
-                "Status: " + (fine.isPaid() ? "PAID" : "UNPAID") + "\n\n" +
-                "This action cannot be undone.",
+                        "Amount: $" + String.format("%.2f", fine.getAmount()) + "\n" +
+                        "Member ID: #" + fine.getMemberId() + "\n" +
+                        "Status: " + (fine.isPaid() ? "PAID" : "UNPAID") + "\n\n" +
+                        "This action cannot be undone.",
                 "Confirm Waive Fine",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE);
@@ -954,7 +1003,9 @@ public class AdminFinesPanel extends JPanel {
             if (deleted) {
                 refresh();
                 dashboard.refreshKpis();
-                JOptionPane.showMessageDialog(dashboard, "Fine #" + fine.getFineId() + " was successfully waived and removed.", "Fine Waived", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(dashboard,
+                        "Fine #" + fine.getFineId() + " was successfully waived and removed.", "Fine Waived",
+                        JOptionPane.INFORMATION_MESSAGE);
             } else {
                 JOptionPane.showMessageDialog(dashboard, "Failed to waive fine.", "Error", JOptionPane.ERROR_MESSAGE);
             }

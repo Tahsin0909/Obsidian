@@ -22,7 +22,8 @@ import java.util.stream.Collectors;
 
 /**
  * Panel displaying books currently and previously borrowed by the member.
- * Includes loan durations, overdue status flags, fine indicators, and quick navigation.
+ * Includes loan durations, overdue status flags, fine indicators, and quick
+ * navigation.
  */
 public class MemberBorrowingsPanel extends JPanel {
 
@@ -38,14 +39,15 @@ public class MemberBorrowingsPanel extends JPanel {
         this.member = member;
 
         setLayout(new BorderLayout(0, 12));
-        setBackground(Color.WHITE);
+        setBackground(UITheme.CARD_BG);
         setBorder(new EmptyBorder(16, 16, 16, 16));
 
         buildUI();
     }
 
     private void buildUI() {
-        String[] cols = {"Borrow ID", "Book Title", "Author", "Borrow Date", "Due Date", "Days Remaining / Status", "Fine Status"};
+        String[] cols = { "Borrow ID", "Book Title", "Author", "Borrow Date", "Due Date", "Days Remaining / Status",
+                "Fine Status" };
         myBorrowingsModel = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -54,10 +56,7 @@ public class MemberBorrowingsPanel extends JPanel {
         };
 
         table = new JTable(myBorrowingsModel);
-        table.setFillsViewportHeight(true);
-        table.setFont(UITheme.FONT_BODY);
-        table.setRowHeight(28);
-        UITheme.styleTableHeader(table.getTableHeader());
+        UITheme.styleTable(table);
 
         UIHelper.centerAlignColumns(table, 0, 3, 4, 5, 6);
         UIHelper.setColumnWidths(table, 70, 180, 130, 90, 90, 140, 110);
@@ -65,15 +64,17 @@ public class MemberBorrowingsPanel extends JPanel {
         // Highlight Fine Status Column
         table.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                JLabel l = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                    boolean hasFocus, int row, int column) {
+                JLabel l = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row,
+                        column);
                 l.setHorizontalAlignment(SwingConstants.CENTER);
                 String text = value != null ? value.toString() : "";
                 if (text.startsWith("UNPAID")) {
                     l.setForeground(UITheme.DANGER);
                     l.setFont(UITheme.FONT_BODY_BOLD);
                 } else if (text.startsWith("PAID")) {
-                    l.setForeground(new Color(0x1B, 0x7A, 0x4B));
+                    l.setForeground(UITheme.ACCENT);
                     l.setFont(UITheme.FONT_BODY_BOLD);
                 } else {
                     l.setForeground(UITheme.TEXT_MUTED);
@@ -106,7 +107,8 @@ public class MemberBorrowingsPanel extends JPanel {
     }
 
     public void refreshTable() {
-        if (myBorrowingsModel == null) return;
+        if (myBorrowingsModel == null)
+            return;
         myBorrowingsModel.setRowCount(0);
         List<Borrowing> list = store.borrowings().stream()
                 .filter(b -> b.getMemberId() == member.getMemberId())
@@ -134,7 +136,7 @@ public class MemberBorrowingsPanel extends JPanel {
                 fineStr = (fine.isPaid() ? "PAID ($" : "UNPAID ($") + String.format("%.2f", fine.getAmount()) + ")";
             }
 
-            myBorrowingsModel.addRow(new Object[]{
+            myBorrowingsModel.addRow(new Object[] {
                     b.getBorrowingId(),
                     bookTitle,
                     bookAuthor,

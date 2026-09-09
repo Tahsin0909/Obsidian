@@ -8,7 +8,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 
 /**
- * Shared UI Layout and Component helper utilities used across dashboards and admin panels.
+ * Shared UI Layout and Component helper utilities used across dashboards and
+ * admin panels.
  */
 public final class UIHelper {
 
@@ -16,7 +17,7 @@ public final class UIHelper {
     }
 
     /**
-     * Standardized form field adder for GridBagLayout forms.
+     * Standardized form field adder for GridBagLayout forms with theme support.
      */
     public static void addFormField(JPanel panel, GridBagConstraints gbc, int row, String label, JComponent field) {
         gbc.gridy = row;
@@ -37,7 +38,15 @@ public final class UIHelper {
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         field.setFont(UITheme.FONT_BODY);
-        if (field instanceof JTextField || field instanceof JComboBox || field instanceof JSpinner) {
+        if (field instanceof JTextField) {
+            UITheme.styleTextField((JTextField) field);
+            field.setPreferredSize(new Dimension(field.getPreferredSize().width, 30));
+            field.setMinimumSize(new Dimension(50, 30));
+        } else if (field instanceof JComboBox) {
+            UITheme.styleComboBox((JComboBox<?>) field);
+            field.setPreferredSize(new Dimension(field.getPreferredSize().width, 30));
+            field.setMinimumSize(new Dimension(50, 30));
+        } else if (field instanceof JSpinner) {
             field.setPreferredSize(new Dimension(field.getPreferredSize().width, 30));
             field.setMinimumSize(new Dimension(50, 30));
         }
@@ -71,7 +80,7 @@ public final class UIHelper {
      */
     public static JPanel createMiniSummaryCard(String title, JLabel valueLabel, Color accentColor) {
         JPanel card = new JPanel(new BorderLayout(4, 2));
-        card.setBackground(new Color(0xFA, 0xFB, 0xFC));
+        card.setBackground(UITheme.SURFACE_ALT);
         card.setBorder(new CompoundBorder(
                 new LineBorder(UITheme.BORDER, 1, true),
                 new EmptyBorder(8, 12, 8, 12)));

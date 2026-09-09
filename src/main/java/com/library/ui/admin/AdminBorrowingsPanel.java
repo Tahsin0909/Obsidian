@@ -19,7 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Panel managing borrowing records, book issue operations, returns, and overdue tracking.
+ * Panel managing borrowing records, book issue operations, returns, and overdue
+ * tracking.
  */
 public class AdminBorrowingsPanel extends JPanel {
 
@@ -38,7 +39,7 @@ public class AdminBorrowingsPanel extends JPanel {
 
     private void buildUI() {
         setLayout(new BorderLayout(0, 10));
-        setBackground(Color.WHITE);
+        setBackground(UITheme.CARD_BG);
         setBorder(new EmptyBorder(14, 14, 14, 14));
 
         // Responsive Toolbar
@@ -50,15 +51,18 @@ public class AdminBorrowingsPanel extends JPanel {
 
         JLabel searchLbl = new JLabel("Search:");
         searchLbl.setFont(UITheme.FONT_BODY_BOLD);
+        searchLbl.setForeground(UITheme.TEXT_DARK);
         borrowingSearchField = new JTextField();
+        UITheme.styleTextField(borrowingSearchField);
         borrowingSearchField.setPreferredSize(new Dimension(170, 30));
 
         JLabel filterLbl = new JLabel("View:");
         filterLbl.setFont(UITheme.FONT_BODY_BOLD);
+        filterLbl.setForeground(UITheme.TEXT_DARK);
 
         String[] filterOptions = { "All Records (History)", "Active Borrowings Only", "Overdue Books Only" };
         borrowingFilterCombo = new JComboBox<>(filterOptions);
-        borrowingFilterCombo.setFont(UITheme.FONT_BODY);
+        UITheme.styleComboBox(borrowingFilterCombo);
         borrowingFilterCombo.setPreferredSize(new Dimension(175, 30));
         borrowingFilterCombo.addActionListener(e -> refresh());
 
@@ -90,7 +94,8 @@ public class AdminBorrowingsPanel extends JPanel {
         toolbar.add(searchAndFilterBox, BorderLayout.WEST);
         toolbar.add(actionsBox, BorderLayout.EAST);
 
-        String[] cols = { "Borrow ID", "Member Name", "Book Title", "Borrow Date", "Due Date", "Return Date", "Status" };
+        String[] cols = { "Borrow ID", "Member Name", "Book Title", "Borrow Date", "Due Date", "Return Date",
+                "Status" };
         borrowingsTableModel = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -100,11 +105,8 @@ public class AdminBorrowingsPanel extends JPanel {
 
         borrowingsTable = new JTable(borrowingsTableModel);
         borrowingsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        borrowingsTable.setFillsViewportHeight(true);
-        borrowingsTable.setFont(UITheme.FONT_BODY);
-        borrowingsTable.setRowHeight(28);
         borrowingsTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        UITheme.styleTableHeader(borrowingsTable.getTableHeader());
+        UITheme.styleTable(borrowingsTable);
 
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(borrowingsTableModel);
         borrowingsTable.setRowSorter(sorter);
@@ -119,9 +121,17 @@ public class AdminBorrowingsPanel extends JPanel {
         });
 
         borrowingSearchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { filter(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { filter(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { filter(); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
+
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
+
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
 
             private void filter() {
                 String text = borrowingSearchField.getText().trim();
@@ -146,10 +156,12 @@ public class AdminBorrowingsPanel extends JPanel {
     }
 
     public void refresh() {
-        if (borrowingsTableModel == null) return;
+        if (borrowingsTableModel == null)
+            return;
         borrowingsTableModel.setRowCount(0);
 
-        String selectedFilter = borrowingFilterCombo != null ? (String) borrowingFilterCombo.getSelectedItem() : "All Records (History)";
+        String selectedFilter = borrowingFilterCombo != null ? (String) borrowingFilterCombo.getSelectedItem()
+                : "All Records (History)";
 
         for (Borrowing b : store.borrowings()) {
             boolean include = true;
@@ -159,7 +171,8 @@ public class AdminBorrowingsPanel extends JPanel {
                 include = b.isOverdue();
             }
 
-            if (!include) continue;
+            if (!include)
+                continue;
 
             Member member = store.findMemberById(b.getMemberId());
             String memberName = member != null ? member.getName() : "Member #" + b.getMemberId();
@@ -191,9 +204,11 @@ public class AdminBorrowingsPanel extends JPanel {
     }
 
     public Borrowing getSelectedBorrowing() {
-        if (borrowingsTable == null) return null;
+        if (borrowingsTable == null)
+            return null;
         int selectedRow = borrowingsTable.getSelectedRow();
-        if (selectedRow == -1) return null;
+        if (selectedRow == -1)
+            return null;
         int modelRow = borrowingsTable.convertRowIndexToModel(selectedRow);
         int borrowingId = (Integer) borrowingsTableModel.getValueAt(modelRow, 0);
         for (Borrowing b : store.borrowings()) {
@@ -211,7 +226,7 @@ public class AdminBorrowingsPanel extends JPanel {
         dialog.setResizable(false);
 
         JPanel root = new JPanel(new BorderLayout(0, 14));
-        root.setBackground(Color.WHITE);
+        root.setBackground(UITheme.CARD_BG);
         root.setBorder(new EmptyBorder(18, 20, 18, 20));
 
         JPanel headerPanel = new JPanel(new BorderLayout(0, 4));
@@ -240,7 +255,8 @@ public class AdminBorrowingsPanel extends JPanel {
         }
         memberCombo.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                    boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof Member) {
                     Member m = (Member) value;
@@ -259,7 +275,8 @@ public class AdminBorrowingsPanel extends JPanel {
         }
         bookCombo.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                    boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof Book) {
                     Book b = (Book) value;
@@ -299,12 +316,14 @@ public class AdminBorrowingsPanel extends JPanel {
             int days = (Integer) daysSpinner.getValue();
 
             if (member == null) {
-                JOptionPane.showMessageDialog(dialog, "Please select an active member.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Please select an active member.", "Validation Error",
+                        JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
             if (book == null) {
-                JOptionPane.showMessageDialog(dialog, "No book selected or no copies currently available.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "No book selected or no copies currently available.",
+                        "Validation Error", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
@@ -319,11 +338,12 @@ public class AdminBorrowingsPanel extends JPanel {
                 dialog.dispose();
                 JOptionPane.showMessageDialog(dashboard,
                         "Book \"" + book.getTitle() + "\" successfully issued to " + member.getName() + "!\n" +
-                        "Due Date: " + borrowing.getDueDate(),
+                                "Due Date: " + borrowing.getDueDate(),
                         "Book Issued",
                         JOptionPane.INFORMATION_MESSAGE);
             } else {
-                JOptionPane.showMessageDialog(dialog, "Failed to issue book. The book might be out of stock.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Failed to issue book. The book might be out of stock.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -354,12 +374,15 @@ public class AdminBorrowingsPanel extends JPanel {
             }
 
             if (target == null) {
-                JOptionPane.showMessageDialog(dashboard, "Borrowing record not found.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dashboard, "Borrowing record not found.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             if (target.getStatus() == Borrowing.Status.RETURNED) {
-                JOptionPane.showMessageDialog(dashboard, "This book has already been returned on " + target.getReturnDate() + ".", "Already Returned", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(dashboard,
+                        "This book has already been returned on " + target.getReturnDate() + ".", "Already Returned",
+                        JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
 
@@ -370,11 +393,11 @@ public class AdminBorrowingsPanel extends JPanel {
 
             int choice = JOptionPane.showConfirmDialog(dashboard,
                     "Process book return for:\n\n" +
-                    "Borrow ID: #" + target.getBorrowingId() + "\n" +
-                    "Book: " + bookTitle + "\n" +
-                    "Member: " + memberName + "\n" +
-                    "Due Date: " + target.getDueDate() + (target.isOverdue() ? "  (OVERDUE!)" : "") + "\n\n" +
-                    "Mark this book as returned today (" + LocalDate.now() + ")?",
+                            "Borrow ID: #" + target.getBorrowingId() + "\n" +
+                            "Book: " + bookTitle + "\n" +
+                            "Member: " + memberName + "\n" +
+                            "Due Date: " + target.getDueDate() + (target.isOverdue() ? "  (OVERDUE!)" : "") + "\n\n" +
+                            "Mark this book as returned today (" + LocalDate.now() + ")?",
                     "Confirm Book Return",
                     JOptionPane.YES_NO_OPTION,
                     target.isOverdue() ? JOptionPane.WARNING_MESSAGE : JOptionPane.QUESTION_MESSAGE);
@@ -389,11 +412,12 @@ public class AdminBorrowingsPanel extends JPanel {
                     dashboard.refreshKpis();
 
                     if (target.getDueDate() != null && LocalDate.now().isAfter(target.getDueDate())) {
-                        long overdueDays = java.time.temporal.ChronoUnit.DAYS.between(target.getDueDate(), LocalDate.now());
+                        long overdueDays = java.time.temporal.ChronoUnit.DAYS.between(target.getDueDate(),
+                                LocalDate.now());
                         int fineChoice = JOptionPane.showConfirmDialog(dashboard,
                                 "Book returned successfully!\n\n" +
-                                "Note: This book was overdue by " + overdueDays + " day(s).\n" +
-                                "Would you like to assess/calculate a fine for this return now?",
+                                        "Note: This book was overdue by " + overdueDays + " day(s).\n" +
+                                        "Would you like to assess/calculate a fine for this return now?",
                                 "Overdue Return - Assess Fine?",
                                 JOptionPane.YES_NO_OPTION,
                                 JOptionPane.INFORMATION_MESSAGE);
@@ -401,10 +425,13 @@ public class AdminBorrowingsPanel extends JPanel {
                             dashboard.getFinesPanel().showCalculateFineDialog(target);
                         }
                     } else {
-                        JOptionPane.showMessageDialog(dashboard, "Book \"" + bookTitle + "\" returned successfully!\nStock quantity restored.", "Return Processed", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(dashboard,
+                                "Book \"" + bookTitle + "\" returned successfully!\nStock quantity restored.",
+                                "Return Processed", JOptionPane.INFORMATION_MESSAGE);
                     }
                 } else {
-                    JOptionPane.showMessageDialog(dashboard, "Failed to process return.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(dashboard, "Failed to process return.", "Error",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             }
         } else {
@@ -421,7 +448,8 @@ public class AdminBorrowingsPanel extends JPanel {
         }
 
         if (activeList.isEmpty()) {
-            JOptionPane.showMessageDialog(dashboard, "There are currently no active borrowings to return.", "No Active Borrowings", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(dashboard, "There are currently no active borrowings to return.",
+                    "No Active Borrowings", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
@@ -431,7 +459,7 @@ public class AdminBorrowingsPanel extends JPanel {
         dialog.setResizable(false);
 
         JPanel root = new JPanel(new BorderLayout(0, 14));
-        root.setBackground(Color.WHITE);
+        root.setBackground(UITheme.CARD_BG);
         root.setBorder(new EmptyBorder(18, 20, 18, 20));
 
         JPanel headerPanel = new JPanel(new BorderLayout(0, 4));
@@ -455,7 +483,8 @@ public class AdminBorrowingsPanel extends JPanel {
         combo.setFont(UITheme.FONT_BODY);
         combo.setRenderer(new DefaultListCellRenderer() {
             @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                    boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof Borrowing) {
                     Borrowing b = (Borrowing) value;
@@ -481,7 +510,8 @@ public class AdminBorrowingsPanel extends JPanel {
         JButton returnBtn = UITheme.accentButton("Confirm Return");
         returnBtn.addActionListener(e -> {
             Borrowing selected = (Borrowing) combo.getSelectedItem();
-            if (selected == null) return;
+            if (selected == null)
+                return;
 
             boolean success = store.returnBook(selected.getBorrowingId());
             if (success) {
@@ -494,7 +524,9 @@ public class AdminBorrowingsPanel extends JPanel {
 
                 Book book = store.findBookById(selected.getBookId());
                 String bTitle = book != null ? book.getTitle() : "Book #" + selected.getBookId();
-                JOptionPane.showMessageDialog(dashboard, "Book \"" + bTitle + "\" was returned successfully!\nStock quantity restored.", "Return Processed", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(dashboard,
+                        "Book \"" + bTitle + "\" was returned successfully!\nStock quantity restored.",
+                        "Return Processed", JOptionPane.INFORMATION_MESSAGE);
             }
         });
 

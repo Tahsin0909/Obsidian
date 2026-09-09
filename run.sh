@@ -1,5 +1,11 @@
 #!/bin/bash
-# Runs the compiled application.
-# Usage: ./run.sh
+
+# Compiles and runs the application
+
 set -e
+
+./compile.sh
+
+echo "Starting application..."
+
 java -cp bin com.library.Main

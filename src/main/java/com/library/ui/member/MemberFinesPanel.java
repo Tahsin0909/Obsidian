@@ -43,7 +43,7 @@ public class MemberFinesPanel extends JPanel {
         this.member = member;
 
         setLayout(new BorderLayout(0, 12));
-        setBackground(Color.WHITE);
+        setBackground(UITheme.CARD_BG);
         setBorder(new EmptyBorder(16, 16, 16, 16));
 
         buildUI();
@@ -63,14 +63,17 @@ public class MemberFinesPanel extends JPanel {
 
         JLabel searchLbl = new JLabel("Search:");
         searchLbl.setFont(UITheme.FONT_BODY_BOLD);
+        searchLbl.setForeground(UITheme.TEXT_DARK);
         fineSearchField = new JTextField();
+        UITheme.styleTextField(fineSearchField);
         fineSearchField.setPreferredSize(new Dimension(160, 28));
 
         JLabel statusLbl = new JLabel("Status:");
         statusLbl.setFont(UITheme.FONT_BODY_BOLD);
-        String[] statusFilters = {"All Fines", "Unpaid Fines Only", "Paid Fines Only"};
+        statusLbl.setForeground(UITheme.TEXT_DARK);
+        String[] statusFilters = { "All Fines", "Unpaid Fines Only", "Paid Fines Only" };
         fineFilterCombo = new JComboBox<>(statusFilters);
-        fineFilterCombo.setFont(UITheme.FONT_BODY);
+        UITheme.styleComboBox(fineFilterCombo);
         fineFilterCombo.setPreferredSize(new Dimension(145, 28));
         fineFilterCombo.addActionListener(e -> refreshTable());
 
@@ -100,7 +103,8 @@ public class MemberFinesPanel extends JPanel {
         toolbarPanel.add(actionButtons, BorderLayout.EAST);
 
         // 3. Fines Table
-        String[] cols = {"Fine ID", "Borrow ID", "Book Title", "Overdue Days", "Fine Amount ($)", "Assessed Date", "Paid Date", "Payment Method", "Status"};
+        String[] cols = { "Fine ID", "Borrow ID", "Book Title", "Overdue Days", "Fine Amount ($)", "Assessed Date",
+                "Paid Date", "Payment Method", "Status" };
         finesTableModel = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -110,21 +114,20 @@ public class MemberFinesPanel extends JPanel {
 
         finesTable = new JTable(finesTableModel);
         finesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        finesTable.setFillsViewportHeight(true);
-        finesTable.setFont(UITheme.FONT_BODY);
-        finesTable.setRowHeight(28);
         finesTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        UITheme.styleTableHeader(finesTable.getTableHeader());
+        UITheme.styleTable(finesTable);
 
         // Custom Renderer for Status (PAID green, UNPAID red)
         finesTable.getColumnModel().getColumn(8).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                JLabel l = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                    boolean hasFocus, int row, int column) {
+                JLabel l = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row,
+                        column);
                 l.setHorizontalAlignment(SwingConstants.CENTER);
                 String valStr = value != null ? value.toString() : "";
                 if ("PAID".equalsIgnoreCase(valStr)) {
-                    l.setForeground(new Color(0x1B, 0x7A, 0x4B));
+                    l.setForeground(UITheme.ACCENT);
                     l.setFont(UITheme.FONT_BODY_BOLD);
                 } else if ("UNPAID".equalsIgnoreCase(valStr)) {
                     l.setForeground(UITheme.DANGER);
@@ -155,9 +158,17 @@ public class MemberFinesPanel extends JPanel {
         });
 
         fineSearchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { filter(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { filter(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { filter(); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
+
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
+
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
 
             private void filter() {
                 String text = fineSearchField.getText().trim();
@@ -196,14 +207,16 @@ public class MemberFinesPanel extends JPanel {
         totalFinesPaidLabel = new JLabel("$0.00 (0 paid)");
 
         strip.add(UIHelper.createMiniSummaryCard("Total Fines Assessed", totalFinesAssessedLabel, UITheme.PRIMARY));
-        strip.add(UIHelper.createMiniSummaryCard("Outstanding Balance / Unpaid", totalFinesUnpaidLabel, UITheme.DANGER));
+        strip.add(
+                UIHelper.createMiniSummaryCard("Outstanding Balance / Unpaid", totalFinesUnpaidLabel, UITheme.DANGER));
         strip.add(UIHelper.createMiniSummaryCard("Total Settled / Paid", totalFinesPaidLabel, UITheme.ACCENT));
 
         return strip;
     }
 
     public void refreshTable() {
-        if (finesTableModel == null) return;
+        if (finesTableModel == null)
+            return;
         finesTableModel.setRowCount(0);
 
         String statusFilter = fineFilterCombo != null ? (String) fineFilterCombo.getSelectedItem() : "All Fines";
@@ -226,8 +239,10 @@ public class MemberFinesPanel extends JPanel {
             }
 
             // Apply status filter
-            if ("Unpaid Fines Only".equals(statusFilter) && f.isPaid()) continue;
-            if ("Paid Fines Only".equals(statusFilter) && !f.isPaid()) continue;
+            if ("Unpaid Fines Only".equals(statusFilter) && f.isPaid())
+                continue;
+            if ("Paid Fines Only".equals(statusFilter) && !f.isPaid())
+                continue;
 
             Borrowing borrowing = null;
             for (Borrowing b : store.borrowings()) {
@@ -247,9 +262,10 @@ public class MemberFinesPanel extends JPanel {
 
             String statusStr = f.isPaid() ? "PAID" : "UNPAID";
             String paidDateStr = f.getPaidDate() != null ? f.getPaidDate().toString() : "-";
-            String methodStr = f.getPaymentMethod() != null && !f.getPaymentMethod().isEmpty() ? f.getPaymentMethod() : (f.isPaid() ? "Cash" : "-");
+            String methodStr = f.getPaymentMethod() != null && !f.getPaymentMethod().isEmpty() ? f.getPaymentMethod()
+                    : (f.isPaid() ? "Cash" : "-");
 
-            finesTableModel.addRow(new Object[]{
+            finesTableModel.addRow(new Object[] {
                     f.getFineId(),
                     f.getBorrowingId(),
                     bookTitle,
@@ -278,9 +294,11 @@ public class MemberFinesPanel extends JPanel {
     }
 
     public Fine getSelectedFine() {
-        if (finesTable == null) return null;
+        if (finesTable == null)
+            return null;
         int selectedRow = finesTable.getSelectedRow();
-        if (selectedRow == -1) return null;
+        if (selectedRow == -1)
+            return null;
         int modelRow = finesTable.convertRowIndexToModel(selectedRow);
         int fineId = (Integer) finesTableModel.getValueAt(modelRow, 0);
         return store.findFineById(fineId);
@@ -298,8 +316,9 @@ public class MemberFinesPanel extends JPanel {
 
         if (fine.isPaid()) {
             JOptionPane.showMessageDialog(this,
-                    "Fine #" + fine.getFineId() + " has already been settled and paid on " + fine.getPaidDate() + ".\n" +
-                    "Payment Method: " + (fine.getPaymentMethod() != null ? fine.getPaymentMethod() : "Cash"),
+                    "Fine #" + fine.getFineId() + " has already been settled and paid on " + fine.getPaidDate() + ".\n"
+                            +
+                            "Payment Method: " + (fine.getPaymentMethod() != null ? fine.getPaymentMethod() : "Cash"),
                     "Fine Already Paid",
                     JOptionPane.INFORMATION_MESSAGE);
             return;
@@ -310,13 +329,14 @@ public class MemberFinesPanel extends JPanel {
 
     public void showProcessPaymentDialog(Fine fine) {
         Window owner = SwingUtilities.getWindowAncestor(this);
-        JDialog dialog = new JDialog(owner, "Pay Fine (Fine #" + fine.getFineId() + ")", Dialog.ModalityType.APPLICATION_MODAL);
+        JDialog dialog = new JDialog(owner, "Pay Fine (Fine #" + fine.getFineId() + ")",
+                Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setSize(480, 420);
         dialog.setLocationRelativeTo(owner);
         dialog.setResizable(false);
 
         JPanel root = new JPanel(new BorderLayout(0, 14));
-        root.setBackground(Color.WHITE);
+        root.setBackground(UITheme.CARD_BG);
         root.setBorder(new EmptyBorder(18, 20, 18, 20));
 
         JPanel headerPanel = new JPanel(new BorderLayout(0, 4));
@@ -338,7 +358,8 @@ public class MemberFinesPanel extends JPanel {
             }
         }
         Book book = borrowing != null ? store.findBookById(borrowing.getBookId()) : null;
-        String bookTitle = book != null ? book.getTitle() : (borrowing != null ? "Book #" + borrowing.getBookId() : "-");
+        String bookTitle = book != null ? book.getTitle()
+                : (borrowing != null ? "Book #" + borrowing.getBookId() : "-");
 
         JPanel form = new JPanel(new GridBagLayout());
         form.setOpaque(false);
@@ -348,18 +369,22 @@ public class MemberFinesPanel extends JPanel {
 
         JLabel fineIdVal = new JLabel("#" + fine.getFineId() + " (Borrow ID: #" + fine.getBorrowingId() + ")");
         fineIdVal.setFont(UITheme.FONT_BODY_BOLD);
+        fineIdVal.setForeground(UITheme.TEXT_DARK);
 
         JLabel bookVal = new JLabel(bookTitle);
         bookVal.setFont(UITheme.FONT_BODY);
+        bookVal.setForeground(UITheme.TEXT_DARK);
 
         JLabel amountVal = new JLabel(String.format("$%.2f", fine.getAmount()));
         amountVal.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        amountVal.setForeground(new Color(0x1B, 0x7A, 0x4B));
+        amountVal.setForeground(UITheme.ACCENT);
 
         JLabel assessedDateVal = new JLabel(fine.getFineDate() != null ? fine.getFineDate().toString() : "-");
         assessedDateVal.setFont(UITheme.FONT_BODY);
+        assessedDateVal.setForeground(UITheme.TEXT_DARK);
 
-        String[] methods = {"Credit/Debit Card", "Online Banking / Transfer", "Mobile Payment (bKash/Nagad)", "Cash at Front Desk", "Library Credit"};
+        String[] methods = { "Credit/Debit Card", "Online Banking / Transfer", "Mobile Payment (bKash/Nagad)",
+                "Cash at Front Desk", "Library Credit" };
         JComboBox<String> methodCombo = new JComboBox<>(methods);
         methodCombo.setFont(UITheme.FONT_BODY);
 
@@ -399,12 +424,12 @@ public class MemberFinesPanel extends JPanel {
 
             JOptionPane.showMessageDialog(this,
                     "Payment of $" + String.format("%.2f", fine.getAmount()) + " completed successfully!\n\n" +
-                    "Transaction Receipt:\n" +
-                    "• Fine ID: #" + fine.getFineId() + "\n" +
-                    "• Member: " + member.getName() + "\n" +
-                    "• Payment Method: " + selectedMethod + "\n" +
-                    "• Date: " + LocalDate.now() + "\n" +
-                    "• Status: PAID IN FULL",
+                            "Transaction Receipt:\n" +
+                            "• Fine ID: #" + fine.getFineId() + "\n" +
+                            "• Member: " + member.getName() + "\n" +
+                            "• Payment Method: " + selectedMethod + "\n" +
+                            "• Date: " + LocalDate.now() + "\n" +
+                            "• Status: PAID IN FULL",
                     "Payment Confirmed",
                     JOptionPane.INFORMATION_MESSAGE);
         });
@@ -432,11 +457,12 @@ public class MemberFinesPanel extends JPanel {
         }
 
         double unpaidSum = myFines.stream().filter(f -> !f.isPaid()).mapToDouble(Fine::getAmount).sum();
-        String[] methods = {"Credit/Debit Card", "Online Banking / Transfer", "Mobile Payment (bKash/Nagad)", "Cash at Front Desk", "Library Credit"};
+        String[] methods = { "Credit/Debit Card", "Online Banking / Transfer", "Mobile Payment (bKash/Nagad)",
+                "Cash at Front Desk", "Library Credit" };
         String method = (String) JOptionPane.showInputDialog(this,
                 "Settle all " + unpaidCount + " unpaid fine(s).\n" +
-                "Total Amount Due: $" + String.format("%.2f", unpaidSum) + "\n\n" +
-                "Select Payment Method:",
+                        "Total Amount Due: $" + String.format("%.2f", unpaidSum) + "\n\n" +
+                        "Select Payment Method:",
                 "Pay All Outstanding Fines",
                 JOptionPane.QUESTION_MESSAGE,
                 null,
@@ -451,9 +477,9 @@ public class MemberFinesPanel extends JPanel {
             }
             JOptionPane.showMessageDialog(this,
                     "Successfully settled " + settled + " fine(s)!\n" +
-                    "Total Paid: $" + String.format("%.2f", unpaidSum) + "\n" +
-                    "Payment Method: " + method + "\n" +
-                    "All fines are now marked as PAID.",
+                            "Total Paid: $" + String.format("%.2f", unpaidSum) + "\n" +
+                            "Payment Method: " + method + "\n" +
+                            "All fines are now marked as PAID.",
                     "All Fines Settled",
                     JOptionPane.INFORMATION_MESSAGE);
         }
@@ -473,13 +499,14 @@ public class MemberFinesPanel extends JPanel {
 
     public void showFineDetailsDialog(Fine fine) {
         Window owner = SwingUtilities.getWindowAncestor(this);
-        JDialog dialog = new JDialog(owner, "Fine Details & Receipt (Fine #" + fine.getFineId() + ")", Dialog.ModalityType.APPLICATION_MODAL);
+        JDialog dialog = new JDialog(owner, "Fine Details & Receipt (Fine #" + fine.getFineId() + ")",
+                Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setSize(480, 440);
         dialog.setLocationRelativeTo(owner);
         dialog.setResizable(false);
 
         JPanel root = new JPanel(new BorderLayout(0, 14));
-        root.setBackground(Color.WHITE);
+        root.setBackground(UITheme.CARD_BG);
         root.setBorder(new EmptyBorder(18, 20, 18, 20));
 
         JPanel headerPanel = new JPanel(new BorderLayout(0, 4));
@@ -501,7 +528,8 @@ public class MemberFinesPanel extends JPanel {
             }
         }
         Book book = borrowing != null ? store.findBookById(borrowing.getBookId()) : null;
-        String bookTitle = book != null ? book.getTitle() : (borrowing != null ? "Book #" + borrowing.getBookId() : "-");
+        String bookTitle = book != null ? book.getTitle()
+                : (borrowing != null ? "Book #" + borrowing.getBookId() : "-");
         long overdueDays = borrowing != null ? store.calculateOverdueDays(borrowing) : 0;
 
         JPanel form = new JPanel(new GridBagLayout());
@@ -512,31 +540,37 @@ public class MemberFinesPanel extends JPanel {
 
         JLabel fineIdVal = new JLabel("#" + fine.getFineId());
         fineIdVal.setFont(UITheme.FONT_BODY_BOLD);
+        fineIdVal.setForeground(UITheme.TEXT_DARK);
 
         JLabel memberVal = new JLabel(member.getName() + " (#" + member.getMemberId() + ")");
         memberVal.setFont(UITheme.FONT_BODY);
+        memberVal.setForeground(UITheme.TEXT_DARK);
 
         JLabel loanVal = new JLabel("Borrowing #" + fine.getBorrowingId() + " (" + bookTitle + ")");
         loanVal.setFont(UITheme.FONT_BODY);
+        loanVal.setForeground(UITheme.TEXT_DARK);
 
         JLabel overdueVal = new JLabel(overdueDays > 0 ? overdueDays + " day(s)" : "-");
         overdueVal.setFont(UITheme.FONT_BODY);
+        overdueVal.setForeground(UITheme.TEXT_DARK);
 
         JLabel amountVal = new JLabel(String.format("$%.2f", fine.getAmount()));
         amountVal.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        amountVal.setForeground(fine.isPaid() ? new Color(0x1B, 0x7A, 0x4B) : UITheme.DANGER);
+        amountVal.setForeground(fine.isPaid() ? UITheme.ACCENT : UITheme.DANGER);
 
         JLabel statusVal = new JLabel(fine.isPaid() ? "PAID" : "UNPAID");
         statusVal.setFont(UITheme.FONT_BODY_BOLD);
-        statusVal.setForeground(fine.isPaid() ? new Color(0x1B, 0x7A, 0x4B) : UITheme.DANGER);
+        statusVal.setForeground(fine.isPaid() ? UITheme.ACCENT : UITheme.DANGER);
 
         JLabel fineDateVal = new JLabel(fine.getFineDate() != null ? fine.getFineDate().toString() : "-");
         fineDateVal.setFont(UITheme.FONT_BODY);
+        fineDateVal.setForeground(UITheme.TEXT_DARK);
 
         JLabel paidDateVal = new JLabel(fine.getPaidDate() != null ? fine.getPaidDate().toString() : "-");
         paidDateVal.setFont(UITheme.FONT_BODY);
 
-        JLabel methodVal = new JLabel(fine.getPaymentMethod() != null && !fine.getPaymentMethod().isEmpty() ? fine.getPaymentMethod() : "-");
+        JLabel methodVal = new JLabel(
+                fine.getPaymentMethod() != null && !fine.getPaymentMethod().isEmpty() ? fine.getPaymentMethod() : "-");
         methodVal.setFont(UITheme.FONT_BODY);
 
         JLabel notesVal = new JLabel(fine.getNotes() != null && !fine.getNotes().isEmpty() ? fine.getNotes() : "None");

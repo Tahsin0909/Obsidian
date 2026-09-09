@@ -16,7 +16,8 @@ import java.awt.*;
 import java.time.LocalDate;
 
 /**
- * Panel managing the library book catalog, inventory counts, and CRUD operations.
+ * Panel managing the library book catalog, inventory counts, and CRUD
+ * operations.
  */
 public class AdminBooksPanel extends JPanel {
 
@@ -34,7 +35,7 @@ public class AdminBooksPanel extends JPanel {
 
     private void buildUI() {
         setLayout(new BorderLayout(0, 10));
-        setBackground(Color.WHITE);
+        setBackground(UITheme.CARD_BG);
         setBorder(new EmptyBorder(14, 14, 14, 14));
 
         // Responsive Toolbar
@@ -45,7 +46,9 @@ public class AdminBooksPanel extends JPanel {
         searchBox.setOpaque(false);
         JLabel searchLbl = new JLabel("Search Books:");
         searchLbl.setFont(UITheme.FONT_BODY_BOLD);
+        searchLbl.setForeground(UITheme.TEXT_DARK);
         searchField = new JTextField();
+        UITheme.styleTextField(searchField);
         searchField.setPreferredSize(new Dimension(240, 30));
         searchBox.add(searchLbl);
         searchBox.add(searchField);
@@ -80,11 +83,8 @@ public class AdminBooksPanel extends JPanel {
 
         booksTable = new JTable(booksTableModel);
         booksTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        booksTable.setFillsViewportHeight(true);
-        booksTable.setFont(UITheme.FONT_BODY);
-        booksTable.setRowHeight(28);
         booksTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        UITheme.styleTableHeader(booksTable.getTableHeader());
+        UITheme.styleTable(booksTable);
 
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(booksTableModel);
         booksTable.setRowSorter(sorter);
@@ -99,9 +99,17 @@ public class AdminBooksPanel extends JPanel {
         });
 
         searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { filter(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { filter(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { filter(); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
+
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
+
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
 
             private void filter() {
                 String text = searchField.getText().trim();
@@ -126,7 +134,8 @@ public class AdminBooksPanel extends JPanel {
     }
 
     public void refresh() {
-        if (booksTableModel == null) return;
+        if (booksTableModel == null)
+            return;
         booksTableModel.setRowCount(0);
         for (Book b : store.books()) {
             booksTableModel.addRow(new Object[] {
@@ -144,9 +153,11 @@ public class AdminBooksPanel extends JPanel {
     }
 
     public Book getSelectedBook() {
-        if (booksTable == null) return null;
+        if (booksTable == null)
+            return null;
         int selectedRow = booksTable.getSelectedRow();
-        if (selectedRow == -1) return null;
+        if (selectedRow == -1)
+            return null;
         int modelRow = booksTable.convertRowIndexToModel(selectedRow);
         int bookId = (Integer) booksTableModel.getValueAt(modelRow, 0);
         return store.findBookById(bookId);
@@ -155,7 +166,8 @@ public class AdminBooksPanel extends JPanel {
     private void onUpdateBookClicked() {
         Book book = getSelectedBook();
         if (book == null) {
-            JOptionPane.showMessageDialog(dashboard, "Please select a book from the table to update.", "No Book Selected", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(dashboard, "Please select a book from the table to update.",
+                    "No Book Selected", JOptionPane.WARNING_MESSAGE);
             return;
         }
         showUpdateBookDialog(book);
@@ -168,7 +180,7 @@ public class AdminBooksPanel extends JPanel {
         dialog.setResizable(false);
 
         JPanel root = new JPanel(new BorderLayout(0, 14));
-        root.setBackground(Color.WHITE);
+        root.setBackground(UITheme.CARD_BG);
         root.setBorder(new EmptyBorder(18, 20, 18, 20));
 
         JPanel headerPanel = new JPanel(new BorderLayout(0, 4));
@@ -228,12 +240,14 @@ public class AdminBooksPanel extends JPanel {
             int qty = (Integer) qtySpinner.getValue();
 
             if (isbn.isEmpty() || title.isEmpty() || author.isEmpty()) {
-                JOptionPane.showMessageDialog(dialog, "Please fill in ISBN, Title, and Author.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Please fill in ISBN, Title, and Author.", "Validation Error",
+                        JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
             if (store.findBookByIsbn(isbn) != null) {
-                JOptionPane.showMessageDialog(dialog, "A book with ISBN \"" + isbn + "\" already exists!", "Duplicate Book", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "A book with ISBN \"" + isbn + "\" already exists!",
+                        "Duplicate Book", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
@@ -247,15 +261,15 @@ public class AdminBooksPanel extends JPanel {
                     publisher.isEmpty() ? "Independent" : publisher,
                     year,
                     qty,
-                    qty
-            );
+                    qty);
 
             store.addBook(newBook);
             refresh();
             dashboard.refreshKpis();
 
             dialog.dispose();
-            JOptionPane.showMessageDialog(dashboard, "Book \"" + newBook.getTitle() + "\" added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(dashboard, "Book \"" + newBook.getTitle() + "\" added successfully!",
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
         });
 
         btnPanel.add(cancelBtn);
@@ -276,7 +290,7 @@ public class AdminBooksPanel extends JPanel {
         dialog.setResizable(false);
 
         JPanel root = new JPanel(new BorderLayout(0, 14));
-        root.setBackground(Color.WHITE);
+        root.setBackground(UITheme.CARD_BG);
         root.setBorder(new EmptyBorder(18, 20, 18, 20));
 
         JPanel headerPanel = new JPanel(new BorderLayout(0, 4));
@@ -343,20 +357,23 @@ public class AdminBooksPanel extends JPanel {
             int newTotalQty = (Integer) qtySpinner.getValue();
 
             if (isbn.isEmpty() || title.isEmpty() || author.isEmpty()) {
-                JOptionPane.showMessageDialog(dialog, "Please fill in ISBN, Title, and Author.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Please fill in ISBN, Title, and Author.", "Validation Error",
+                        JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
             Book existingWithIsbn = store.findBookByIsbn(isbn);
             if (existingWithIsbn != null && existingWithIsbn.getBookId() != book.getBookId()) {
-                JOptionPane.showMessageDialog(dialog, "Another book with ISBN \"" + isbn + "\" already exists!", "Duplicate Book", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Another book with ISBN \"" + isbn + "\" already exists!",
+                        "Duplicate Book", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
             int currentlyBorrowed = book.getTotalQuantity() - book.getAvailableQuantity();
             if (newTotalQty < currentlyBorrowed) {
                 JOptionPane.showMessageDialog(dialog,
-                        "Total quantity cannot be less than the number of currently borrowed copies (" + currentlyBorrowed + ").",
+                        "Total quantity cannot be less than the number of currently borrowed copies ("
+                                + currentlyBorrowed + ").",
                         "Invalid Quantity",
                         JOptionPane.WARNING_MESSAGE);
                 return;
@@ -383,7 +400,8 @@ public class AdminBooksPanel extends JPanel {
             }
 
             dialog.dispose();
-            JOptionPane.showMessageDialog(dashboard, "Book \"" + book.getTitle() + "\" updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(dashboard, "Book \"" + book.getTitle() + "\" updated successfully!",
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
         });
 
         btnPanel.add(cancelBtn);
@@ -400,14 +418,16 @@ public class AdminBooksPanel extends JPanel {
     private void onDeleteBookClicked() {
         Book book = getSelectedBook();
         if (book == null) {
-            JOptionPane.showMessageDialog(dashboard, "Please select a book from the table to delete.", "No Book Selected", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(dashboard, "Please select a book from the table to delete.",
+                    "No Book Selected", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         if (store.hasActiveBorrowingsForBook(book.getBookId())) {
             JOptionPane.showMessageDialog(dashboard,
-                    "Cannot delete \"" + book.getTitle() + "\" because copy/copies are currently borrowed by member(s).\n" +
-                    "Please ensure all borrowed copies are returned before deleting this book.",
+                    "Cannot delete \"" + book.getTitle()
+                            + "\" because copy/copies are currently borrowed by member(s).\n" +
+                            "Please ensure all borrowed copies are returned before deleting this book.",
                     "Active Borrowings Exist",
                     JOptionPane.ERROR_MESSAGE);
             return;
@@ -415,11 +435,11 @@ public class AdminBooksPanel extends JPanel {
 
         int choice = JOptionPane.showConfirmDialog(dashboard,
                 "Are you sure you want to delete the following book from the catalog?\n\n" +
-                "Title: " + book.getTitle() + "\n" +
-                "Author: " + book.getAuthor() + "\n" +
-                "ISBN: " + book.getIsbn() + "\n" +
-                "Total Copies: " + book.getTotalQuantity() + "\n\n" +
-                "This action cannot be undone.",
+                        "Title: " + book.getTitle() + "\n" +
+                        "Author: " + book.getAuthor() + "\n" +
+                        "ISBN: " + book.getIsbn() + "\n" +
+                        "Total Copies: " + book.getTotalQuantity() + "\n\n" +
+                        "This action cannot be undone.",
                 "Confirm Book Deletion",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE);
@@ -432,9 +452,11 @@ public class AdminBooksPanel extends JPanel {
                     dashboard.getBorrowingsPanel().refresh();
                 }
                 dashboard.refreshKpis();
-                JOptionPane.showMessageDialog(dashboard, "Book \"" + book.getTitle() + "\" deleted successfully.", "Book Deleted", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(dashboard, "Book \"" + book.getTitle() + "\" deleted successfully.",
+                        "Book Deleted", JOptionPane.INFORMATION_MESSAGE);
             } else {
-                JOptionPane.showMessageDialog(dashboard, "Failed to delete book. Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dashboard, "Failed to delete book. Please try again.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     }

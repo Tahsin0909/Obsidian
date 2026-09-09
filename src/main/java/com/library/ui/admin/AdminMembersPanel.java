@@ -16,7 +16,8 @@ import java.awt.*;
 import java.time.LocalDate;
 
 /**
- * Panel managing member accounts, registration, profile modifications, and member status.
+ * Panel managing member accounts, registration, profile modifications, and
+ * member status.
  */
 public class AdminMembersPanel extends JPanel {
 
@@ -34,7 +35,7 @@ public class AdminMembersPanel extends JPanel {
 
     private void buildUI() {
         setLayout(new BorderLayout(0, 10));
-        setBackground(Color.WHITE);
+        setBackground(UITheme.CARD_BG);
         setBorder(new EmptyBorder(14, 14, 14, 14));
 
         // Responsive Toolbar
@@ -45,7 +46,9 @@ public class AdminMembersPanel extends JPanel {
         searchBox.setOpaque(false);
         JLabel searchLbl = new JLabel("Search Members:");
         searchLbl.setFont(UITheme.FONT_BODY_BOLD);
+        searchLbl.setForeground(UITheme.TEXT_DARK);
         searchField = new JTextField();
+        UITheme.styleTextField(searchField);
         searchField.setPreferredSize(new Dimension(240, 30));
         searchBox.add(searchLbl);
         searchBox.add(searchField);
@@ -84,11 +87,8 @@ public class AdminMembersPanel extends JPanel {
 
         membersTable = new JTable(membersTableModel);
         membersTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        membersTable.setFillsViewportHeight(true);
-        membersTable.setFont(UITheme.FONT_BODY);
-        membersTable.setRowHeight(28);
         membersTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        UITheme.styleTableHeader(membersTable.getTableHeader());
+        UITheme.styleTable(membersTable);
 
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(membersTableModel);
         membersTable.setRowSorter(sorter);
@@ -103,9 +103,17 @@ public class AdminMembersPanel extends JPanel {
         });
 
         searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { filter(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { filter(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { filter(); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
+
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
+
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
 
             private void filter() {
                 String text = searchField.getText().trim();
@@ -130,7 +138,8 @@ public class AdminMembersPanel extends JPanel {
     }
 
     public void refresh() {
-        if (membersTableModel == null) return;
+        if (membersTableModel == null)
+            return;
         membersTableModel.setRowCount(0);
         for (Member m : store.members()) {
             membersTableModel.addRow(new Object[] {
@@ -150,9 +159,11 @@ public class AdminMembersPanel extends JPanel {
     }
 
     public Member getSelectedMember() {
-        if (membersTable == null) return null;
+        if (membersTable == null)
+            return null;
         int selectedRow = membersTable.getSelectedRow();
-        if (selectedRow == -1) return null;
+        if (selectedRow == -1)
+            return null;
         int modelRow = membersTable.convertRowIndexToModel(selectedRow);
         int memberId = (Integer) membersTableModel.getValueAt(modelRow, 0);
         return store.findMemberById(memberId);
@@ -161,7 +172,8 @@ public class AdminMembersPanel extends JPanel {
     private void onUpdateMemberClicked() {
         Member member = getSelectedMember();
         if (member == null) {
-            JOptionPane.showMessageDialog(dashboard, "Please select a member from the table to update.", "No Member Selected", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(dashboard, "Please select a member from the table to update.",
+                    "No Member Selected", JOptionPane.WARNING_MESSAGE);
             return;
         }
         showUpdateMemberDialog(member);
@@ -174,7 +186,7 @@ public class AdminMembersPanel extends JPanel {
         dialog.setResizable(false);
 
         JPanel root = new JPanel(new BorderLayout(0, 14));
-        root.setBackground(Color.WHITE);
+        root.setBackground(UITheme.CARD_BG);
         root.setBorder(new EmptyBorder(18, 20, 18, 20));
 
         JPanel headerPanel = new JPanel(new BorderLayout(0, 4));
@@ -228,22 +240,26 @@ public class AdminMembersPanel extends JPanel {
             Member.Status status = (Member.Status) statusCombo.getSelectedItem();
 
             if (name.isEmpty() || username.isEmpty() || email.isEmpty()) {
-                JOptionPane.showMessageDialog(dialog, "Please fill in Name, Username, and Email.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Please fill in Name, Username, and Email.", "Validation Error",
+                        JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
             if (password.isEmpty()) {
-                JOptionPane.showMessageDialog(dialog, "Please enter an initial password.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Please enter an initial password.", "Validation Error",
+                        JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
             if (store.isUsernameOrEmailTaken(username, -1)) {
-                JOptionPane.showMessageDialog(dialog, "Username \"" + username + "\" is already taken!", "Duplicate User", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Username \"" + username + "\" is already taken!",
+                        "Duplicate User", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
             if (store.isUsernameOrEmailTaken(email, -1)) {
-                JOptionPane.showMessageDialog(dialog, "Email \"" + email + "\" is already registered!", "Duplicate User", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Email \"" + email + "\" is already registered!",
+                        "Duplicate User", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
@@ -259,15 +275,15 @@ public class AdminMembersPanel extends JPanel {
                     phone.isEmpty() ? "-" : phone,
                     address.isEmpty() ? "-" : address,
                     LocalDate.now(),
-                    status != null ? status : Member.Status.ACTIVE
-            );
+                    status != null ? status : Member.Status.ACTIVE);
 
             store.addMember(newMember);
             refresh();
             dashboard.refreshKpis();
 
             dialog.dispose();
-            JOptionPane.showMessageDialog(dashboard, "Member \"" + newMember.getName() + "\" registered successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(dashboard, "Member \"" + newMember.getName() + "\" registered successfully!",
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
         });
 
         btnPanel.add(cancelBtn);
@@ -288,7 +304,7 @@ public class AdminMembersPanel extends JPanel {
         dialog.setResizable(false);
 
         JPanel root = new JPanel(new BorderLayout(0, 14));
-        root.setBackground(Color.WHITE);
+        root.setBackground(UITheme.CARD_BG);
         root.setBorder(new EmptyBorder(18, 20, 18, 20));
 
         JPanel headerPanel = new JPanel(new BorderLayout(0, 4));
@@ -343,17 +359,20 @@ public class AdminMembersPanel extends JPanel {
             Member.Status status = (Member.Status) statusCombo.getSelectedItem();
 
             if (name.isEmpty() || username.isEmpty() || email.isEmpty()) {
-                JOptionPane.showMessageDialog(dialog, "Please fill in Name, Username, and Email.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Please fill in Name, Username, and Email.", "Validation Error",
+                        JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
             if (store.isUsernameOrEmailTaken(username, member.getMemberId())) {
-                JOptionPane.showMessageDialog(dialog, "Username \"" + username + "\" is already taken!", "Duplicate User", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Username \"" + username + "\" is already taken!",
+                        "Duplicate User", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
             if (store.isUsernameOrEmailTaken(email, member.getMemberId())) {
-                JOptionPane.showMessageDialog(dialog, "Email \"" + email + "\" is already registered!", "Duplicate User", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Email \"" + email + "\" is already registered!",
+                        "Duplicate User", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
@@ -380,7 +399,8 @@ public class AdminMembersPanel extends JPanel {
             }
 
             dialog.dispose();
-            JOptionPane.showMessageDialog(dashboard, "Member \"" + member.getName() + "\" updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(dashboard, "Member \"" + member.getName() + "\" updated successfully!",
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
         });
 
         btnPanel.add(cancelBtn);

@@ -16,7 +16,8 @@ import java.awt.*;
 
 /**
  * Modern, Responsive Administrator Dashboard for the Library Management System.
- * Coordinates system-wide administration, KPI tracking, and modular management panels.
+ * Coordinates system-wide administration, KPI tracking, and modular management
+ * panels.
  */
 public class AdminDashboard extends JFrame {
 
@@ -92,26 +93,29 @@ public class AdminDashboard extends JFrame {
 
         header.add(titleBox, BorderLayout.WEST);
 
-        // Admin badge & Logout button
+        // Admin badge, Theme Toggle & Logout button
         JPanel actionsBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         actionsBox.setOpaque(false);
 
         JPanel userBadge = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 4));
-        userBadge.setBackground(Color.WHITE);
+        userBadge.setBackground(UITheme.CARD_BG);
         userBadge.setBorder(new CompoundBorder(
                 new LineBorder(UITheme.BORDER, 1, true),
                 new EmptyBorder(2, 8, 2, 8)));
 
         JLabel userName = new JLabel(admin.getFullName() + " (" + admin.getEmail() + ")");
         userName.setFont(UITheme.FONT_BODY_BOLD);
-        userName.setForeground(UITheme.PRIMARY);
+        userName.setForeground(UITheme.PRIMARY_TEXT);
 
         userBadge.add(userName);
+
+        JButton themeToggleBtn = UITheme.createThemeToggleButton(() -> refreshTheme());
 
         JButton logoutBtn = UITheme.secondaryButton("Logout");
         logoutBtn.addActionListener(e -> logout());
 
         actionsBox.add(userBadge);
+        actionsBox.add(themeToggleBtn);
         actionsBox.add(logoutBtn);
 
         header.add(actionsBox, BorderLayout.EAST);
@@ -127,7 +131,7 @@ public class AdminDashboard extends JFrame {
         activeBorrowingsValueLabel = new JLabel("0");
         outstandingFinesKpiLabel = new JLabel("$0.00");
 
-        kpiPanel.add(createKpiCard("Total Books", totalBooksValueLabel, UITheme.PRIMARY));
+        kpiPanel.add(createKpiCard("Total Books", totalBooksValueLabel, UITheme.PRIMARY_TEXT));
         kpiPanel.add(createKpiCard("Registered Members", totalMembersValueLabel, UITheme.ACCENT));
         kpiPanel.add(createKpiCard("Active Borrowings", activeBorrowingsValueLabel, UITheme.WARNING));
         kpiPanel.add(createKpiCard("Unpaid Fines", outstandingFinesKpiLabel, UITheme.DANGER));
@@ -155,8 +159,7 @@ public class AdminDashboard extends JFrame {
 
     private JTabbedPane createTabbedContentPanel() {
         tabs = new JTabbedPane();
-        tabs.setFont(UITheme.FONT_BODY_BOLD);
-        tabs.setBackground(Color.WHITE);
+        UITheme.styleTabbedPane(tabs);
 
         booksPanel = new AdminBooksPanel(this);
         membersPanel = new AdminMembersPanel(this);
@@ -177,7 +180,8 @@ public class AdminDashboard extends JFrame {
     public void refreshKpis() {
         int totalBooks = store.books().size();
         int totalMembers = store.members().size();
-        int activeBorrowings = (int) store.borrowings().stream().filter(b -> b.getStatus() == Borrowing.Status.ACTIVE).count();
+        int activeBorrowings = (int) store.borrowings().stream().filter(b -> b.getStatus() == Borrowing.Status.ACTIVE)
+                .count();
         double outstandingFines = store.getTotalOutstandingFines();
 
         if (totalBooksValueLabel != null) {
@@ -199,10 +203,14 @@ public class AdminDashboard extends JFrame {
      */
     public void refreshAll() {
         refreshKpis();
-        if (booksPanel != null) booksPanel.refresh();
-        if (membersPanel != null) membersPanel.refresh();
-        if (borrowingsPanel != null) borrowingsPanel.refresh();
-        if (finesPanel != null) finesPanel.refresh();
+        if (booksPanel != null)
+            booksPanel.refresh();
+        if (membersPanel != null)
+            membersPanel.refresh();
+        if (borrowingsPanel != null)
+            borrowingsPanel.refresh();
+        if (finesPanel != null)
+            finesPanel.refresh();
     }
 
     public AdminBooksPanel getBooksPanel() {
@@ -225,6 +233,13 @@ public class AdminDashboard extends JFrame {
         if (tabs != null) {
             tabs.setSelectedIndex(3);
         }
+    }
+
+    public void refreshTheme() {
+        getContentPane().removeAll();
+        buildUI();
+        getContentPane().revalidate();
+        getContentPane().repaint();
     }
 
     private void logout() {
