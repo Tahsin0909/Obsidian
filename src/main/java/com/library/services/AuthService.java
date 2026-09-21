@@ -23,7 +23,6 @@ public class AuthService {
         if (emailOrUsername == null || password == null) {
             return null;
         }
-        System.out()
         String trimmed = emailOrUsername.trim();
         if (trimmed.isEmpty() || password.isEmpty()) {
             return null;
