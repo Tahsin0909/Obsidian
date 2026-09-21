@@ -28,6 +28,8 @@ public class AuthService {
             return null;
         }
 
+System.out,println()
+
         // 1. Check Admin accounts (supports logging in via "admin" or "admin@mail.com")
         Admin admin = store.findAdminByUsernameOrEmail(trimmed);
         if (admin != null) {
