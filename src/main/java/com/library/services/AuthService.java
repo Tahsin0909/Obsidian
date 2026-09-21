@@ -27,6 +27,7 @@ public class AuthService {
         if (trimmed.isEmpty() || password.isEmpty()) {
             return null;
         }
+
         // 1. Check Admin accounts (supports logging in via "admin" or "admin@mail.com")
         Admin admin = store.findAdminByUsernameOrEmail(trimmed);
         if (admin != null) {
